@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Paciente\DashboardController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -14,8 +15,15 @@ Route::get('/', function () {
     ]);
 });
 
+// Tu nueva ruta conectada al controlador
 Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
+    // 1. Buscamos los turnos del paciente logueado usando el Modelo
+    $turnos = \App\Models\Turno::where('user_id', auth()->id())->get();
+
+    // 2. Se los pasamos a la vista de React
+    return Inertia::render('Dashboard', [
+        'turnos' => $turnos
+    ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {

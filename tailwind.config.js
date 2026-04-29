@@ -13,8 +13,15 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                // Reemplazamos la fuente por defecto por Montserrat
+                sans: ['Montserrat', ...defaultTheme.fontFamily.sans],
             },
+            colors: {
+                // Paleta Institucional Hospital Universitario
+                primary: '#003764',    // Pantone 2955 C
+                secondary: '#C7A36E',  // Pantone 465 M
+                brandText: '#59595b',  // Texto Logotipo
+            }
         },
     },
 
