@@ -41,7 +41,7 @@ export default function Register() {
                     
                     <div className="relative z-10">
                         <div className="mb-3 h-1 w-8 rounded-full bg-secondary"></div>
-                        <p className="text-[10px] font-black text-blue-100/50 uppercase tracking-[0.2em]">Registro Seguro</p>
+                        <p className="text-[10px] font-black text-blue-100/50 uppercase tracking-[0.2em]">Registro de pacientes</p>
                     </div>
                 </div>
 
@@ -53,7 +53,7 @@ export default function Register() {
 
                         <div className="mb-5">
                             <h1 className="mb-1 text-3xl font-black tracking-tight text-primary">Crear cuenta</h1>
-                            <p className="text-sm font-semibold text-brandText">Complete sus datos personales para darse de alta.</p>
+                            <p className="text-sm font-semibold text-brandText">Complete sus datos personales para darse de alta en el sistema.</p>
                         </div>
 
                         <form onSubmit={submit}>
@@ -73,7 +73,7 @@ export default function Register() {
                                 </div>
 
                                 <div>
-                                    <label htmlFor="dni" className={labelClass}>DNI</label>
+                                    <label htmlFor="dni" className={labelClass}>Número de Documento (DNI)</label>
                                     <input id="dni" type="text" inputMode="numeric" value={data.dni} onChange={(e) => handleNumericOnly('dni', e.target.value)} placeholder="Sin puntos" required autoComplete="off"
                                         className={inputClass} />
                                     {errors.dni && <p className={errorClass}>{errors.dni}</p>}
@@ -141,7 +141,7 @@ export default function Register() {
                                 </div>
 
                                 <div>
-                                    <label htmlFor="password_confirmation" className={labelClass}>Confirmar clave</label>
+                                    <label htmlFor="password_confirmation" className={labelClass}>Confirmar contraseña</label>
                                     <input id="password_confirmation" type="password" value={data.password_confirmation} onChange={(e) => setData('password_confirmation', e.target.value)} required placeholder="••••••••" autoComplete="new-password"
                                         className={`${inputClass} font-black tracking-widest placeholder:tracking-normal`} />
                                     {errors.password_confirmation && <p className={errorClass}>{errors.password_confirmation}</p>}

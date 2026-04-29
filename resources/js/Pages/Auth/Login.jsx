@@ -24,16 +24,16 @@ export default function Login() {
                     <div className="relative z-10 mt-4">
                         <img src="/img/Logo HU Blanco.svg" alt="Hospital Universitario" className="mb-12 h-auto w-full opacity-95" />
                         <h2 className="mb-4 text-3xl font-black uppercase leading-tight tracking-tight text-white">
-                            Bienvenido al <br /><span className="text-secondary">Portal.</span>
+                            Bienvenido al <br /><span className="text-secondary">Portal de Pacientes.</span>
                         </h2>
                         <p className="pr-4 text-sm font-semibold leading-relaxed text-blue-100/75">
-                            Gestione su salud de manera integral, fácil y segura.
+                            Acceda para coordinar sus turnos, consultar resultados y gestionar su salud de manera integral.
                         </p>
                     </div>
                     
                     <div className="relative z-10">
                         <div className="mb-3 h-1 w-8 rounded-full bg-secondary"></div>
-                        <p className="text-[10px] font-black text-blue-100/50 uppercase tracking-[0.2em]">Atención al Paciente</p>
+                        <p className="text-[10px] font-black text-blue-100/50 uppercase tracking-[0.2em]">Registro de Paciente</p>
                     </div>
                 </div>
 
