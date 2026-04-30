@@ -4,6 +4,8 @@ import { Head, Link, useForm } from '@inertiajs/react';
 export default function Dashboard({ auth, turnos = [] }) {
     const [tab, setTab] = useState('inicio');
     const [subTabTurnos, setSubTabTurnos] = useState('proximos'); 
+    const [subTabSalud, setSubTabSalud] = useState('resultados');
+    const [subTabCartilla, setSubTabCartilla] = useState('especialidades');
     
     const [mobileMenu, setMobileMenu] = useState(false);
     const [profileOpen, setProfileOpen] = useState(false);
@@ -81,6 +83,7 @@ export default function Dashboard({ auth, turnos = [] }) {
         <div className="min-h-screen bg-primary p-3 font-sans antialiased lg:p-4">
             <Head title="Home | Hospital Universitario" />
 
+            {/* Contenedor principal de la APP */}
             <div className="mx-auto flex min-h-[calc(100vh-1.5rem)] w-full max-w-[1900px] overflow-hidden rounded-[2rem] bg-white shadow-2xl lg:min-h-[calc(100vh-2rem)]">
                 
                 {/* --- SIDEBAR IZQUIERDO --- */}
@@ -96,6 +99,8 @@ export default function Dashboard({ auth, turnos = [] }) {
 
                 {/* --- CONTENIDO PRINCIPAL --- */}
                 <main className="flex min-w-0 flex-1 flex-col bg-white">
+                    
+                    {/* Header */}
                     <header className="shrink-0 border-b border-gray-50 px-5 py-4 lg:px-12 lg:py-6">
                         <div className="mb-4 flex items-center justify-between gap-4 lg:hidden">
                             <button type="button" onClick={() => setMobileMenu((value) => !value)} className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#F8F9FA] text-primary transition-colors hover:bg-gray-100">
@@ -122,159 +127,151 @@ export default function Dashboard({ auth, turnos = [] }) {
                         </div>
                     </header>
 
-                    <div className="flex-1 overflow-y-auto bg-white p-5 lg:p-12">
+                    {/* CONTENEDOR CON SCROLL INTERNO */}
+                    <div className="flex flex-1 flex-col overflow-y-auto bg-white relative">
                         
-                        {/* =========================================
-                            PANEL DE CONTROL (Inicio)
-                        ========================================= */}
-                        {tab === 'inicio' && (
-                            <div className="mx-auto max-w-[1400px]">
-                                <div className="mb-8 flex flex-col items-start justify-between gap-6 md:flex-row md:items-end lg:mb-12">
-                                    <div className="w-full md:w-auto">
-                                        <h1 className="mb-2 text-3xl font-black uppercase tracking-tight text-primary lg:text-4xl">Panel de Control</h1>
-                                        <p className="font-semibold text-brandText">Hola {userName}, este es el resumen de tu salud hoy.</p>
+                        {/* Wrapper para dar Padding al contenido y empujar el Footer hacia abajo */}
+                        <div className="flex-1 p-5 lg:p-12">
+                            
+                            {/* =========================================
+                                SECCIÓN 1: INICIO
+                            ========================================= */}
+                            {tab === 'inicio' && (
+                                <div className="mx-auto max-w-[1400px]">
+                                    <div className="mb-8 flex flex-col items-start justify-between gap-6 md:flex-row md:items-end lg:mb-12">
+                                        <div className="w-full md:w-auto">
+                                            <h1 className="mb-2 text-3xl font-black uppercase tracking-tight text-primary lg:text-4xl">Panel de Control</h1>
+                                            <p className="font-semibold text-brandText">Hola {userName}, este es el resumen de tu salud hoy.</p>
+                                        </div>
+                                        <button onClick={() => setTab('turnos')} className="group flex w-full md:w-auto shrink-0 items-center justify-center gap-3 rounded-2xl bg-secondary px-8 py-4 text-[12px] font-black uppercase tracking-widest text-white shadow-xl shadow-secondary/30 transition-all hover:scale-105 hover:bg-[#B38F5A]">
+                                            <span className="material-symbols-outlined text-[24px] transition-transform group-hover:rotate-12">calendar_add_on</span>
+                                            Solicitar Nuevo Turno
+                                        </button>
                                     </div>
-                                    <button onClick={() => setTab('turnos')} className="group flex w-full md:w-auto shrink-0 items-center justify-center gap-3 rounded-2xl bg-secondary px-8 py-4 text-[12px] font-black uppercase tracking-widest text-white shadow-xl shadow-secondary/30 transition-all hover:scale-105 hover:bg-[#B38F5A]">
-                                        <span className="material-symbols-outlined text-[24px] transition-transform group-hover:rotate-12">calendar_add_on</span>
-                                        Solicitar Nuevo Turno
-                                    </button>
-                                </div>
 
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-start">
-                                    <div className="w-full">
-                                        {turnosFuturos.length > 0 ? (
-                                            <div className="relative overflow-hidden rounded-[2rem] bg-primary p-6 sm:p-8 text-white shadow-xl shadow-primary/20">
-                                                <div className="absolute -right-4 -top-10 opacity-[0.07]">
-                                                    <span className="material-symbols-outlined text-[200px]">cardiology</span>
-                                                </div>
-                                                <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 relative z-10">
-                                                    <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-secondary">Tu Próximo Turno</h2>
-                                                    {turnosFuturos[0].estado === 'confirmado' && (
-                                                        <span className="bg-white/10 border border-white/20 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full flex items-center gap-1 w-fit">
-                                                            <span className="w-1.5 h-1.5 rounded-full bg-green-400"></span> Confirmado
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <div className="mb-8 flex flex-col sm:flex-row gap-5 relative z-10">
-                                                    <div className="flex flex-col items-center justify-center bg-white rounded-2xl w-full sm:w-24 h-24 shrink-0 shadow-lg text-primary text-center overflow-hidden">
-                                                        <span className="text-[10px] font-black uppercase tracking-widest bg-blue-50 w-full py-1.5 border-b border-gray-100 text-primary">
-                                                            {new Date(turnosFuturos[0].fecha_hora).toLocaleDateString('es-AR', { month: 'short' })}
-                                                        </span>
-                                                        <span className="text-4xl font-black leading-none mt-2">
-                                                            {new Date(turnosFuturos[0].fecha_hora).getDate()}
-                                                        </span>
-                                                        <span className="text-[10px] font-bold uppercase text-gray-400 mt-1 mb-2">
-                                                            {new Date(turnosFuturos[0].fecha_hora).toLocaleDateString('es-AR', { weekday: 'short' })}
-                                                        </span>
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-start">
+                                        <div className="w-full">
+                                            {turnosFuturos.length > 0 ? (
+                                                <div className="relative overflow-hidden rounded-[2rem] bg-primary p-6 sm:p-8 text-white shadow-xl shadow-primary/20">
+                                                    <div className="absolute -right-4 -top-10 opacity-[0.07]">
+                                                        <span className="material-symbols-outlined text-[200px]">cardiology</span>
                                                     </div>
-                                                    <div className="flex flex-col justify-center w-full min-w-0">
-                                                        <div className="flex items-center gap-2 mb-2 bg-white/10 w-fit px-3 py-1 rounded-lg border border-white/10">
-                                                            <span className="material-symbols-outlined text-secondary text-sm">schedule</span>
-                                                            <span className="text-xs font-black uppercase tracking-widest text-secondary whitespace-nowrap">
-                                                                {new Date(turnosFuturos[0].fecha_hora).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })} hs
+                                                    <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 relative z-10">
+                                                        <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-secondary">Tu Próximo Turno</h2>
+                                                        {turnosFuturos[0].estado === 'confirmado' && (
+                                                            <span className="bg-white/10 border border-white/20 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full flex items-center gap-1 w-fit">
+                                                                <span className="w-1.5 h-1.5 rounded-full bg-green-400"></span> Confirmado
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <div className="mb-8 flex flex-col sm:flex-row gap-5 relative z-10">
+                                                        <div className="flex flex-col items-center justify-center bg-white rounded-2xl w-full sm:w-24 h-24 shrink-0 shadow-lg text-primary text-center overflow-hidden">
+                                                            <span className="text-[10px] font-black uppercase tracking-widest bg-blue-50 w-full py-1.5 border-b border-gray-100 text-primary">
+                                                                {new Date(turnosFuturos[0].fecha_hora).toLocaleDateString('es-AR', { month: 'short' })}
+                                                            </span>
+                                                            <span className="text-4xl font-black leading-none mt-2">
+                                                                {new Date(turnosFuturos[0].fecha_hora).getDate()}
+                                                            </span>
+                                                            <span className="text-[10px] font-bold uppercase text-gray-400 mt-1 mb-2">
+                                                                {new Date(turnosFuturos[0].fecha_hora).toLocaleDateString('es-AR', { weekday: 'short' })}
                                                             </span>
                                                         </div>
-                                                        <h3 className="text-xl sm:text-2xl font-black text-white leading-tight uppercase tracking-tight break-words">
-                                                            {turnosFuturos[0].especialidad}
-                                                        </h3>
-                                                        <div className="flex items-center gap-2 mt-2 opacity-80 flex-wrap">
-                                                            <span className="material-symbols-outlined text-sm shrink-0">medical_information</span>
-                                                            <p className="text-sm font-semibold truncate">Dr/a. {turnosFuturos[0].medico_nombre}</p>
+                                                        <div className="flex flex-col justify-center w-full min-w-0">
+                                                            <div className="flex items-center gap-2 mb-2 bg-white/10 w-fit px-3 py-1 rounded-lg border border-white/10">
+                                                                <span className="material-symbols-outlined text-secondary text-sm">schedule</span>
+                                                                <span className="text-xs font-black uppercase tracking-widest text-secondary whitespace-nowrap">
+                                                                    {new Date(turnosFuturos[0].fecha_hora).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })} hs
+                                                                </span>
+                                                            </div>
+                                                            <h3 className="text-xl sm:text-2xl font-black text-white leading-tight uppercase tracking-tight break-words">
+                                                                {turnosFuturos[0].especialidad}
+                                                            </h3>
+                                                            <div className="flex items-center gap-2 mt-2 opacity-80 flex-wrap">
+                                                                <span className="material-symbols-outlined text-sm shrink-0">medical_information</span>
+                                                                <p className="text-sm font-semibold truncate">Dr/a. {turnosFuturos[0].medico_nombre}</p>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                                
-                                                {/* Botones de Acción (Solo Cancelar) */}
-                                                <div className="flex relative z-10 border-t border-white/10 pt-6">
-                                                    <button className="w-full sm:w-auto rounded-xl border border-white/20 bg-transparent px-6 py-3 text-[11px] font-black uppercase tracking-widest text-white transition-colors hover:bg-red-500/20 hover:border-red-500/50 flex items-center justify-center gap-2">
-                                                        <span className="material-symbols-outlined text-[18px]">event_busy</span> Cancelar Turno
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div className="relative flex min-h-[220px] flex-col items-center justify-center overflow-hidden rounded-[2rem] bg-[#F8F9FA] p-8 text-center border border-dashed border-gray-200">
-                                                <span className="material-symbols-outlined text-4xl text-gray-300 mb-3">event_available</span>
-                                                <h3 className="text-lg font-black tracking-tight text-primary uppercase">Sin turnos próximos</h3>
-                                                <p className="text-sm font-semibold text-gray-400">Actualmente no tenés citas programadas.</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="w-full">
-                                        <div className="rounded-[2rem] border border-gray-100 bg-white p-6 sm:p-8 shadow-sm h-full flex flex-col">
-                                            <div className="mb-6 flex items-center justify-between">
-                                                <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Últimos Resultados</h2>
-                                                <button onClick={() => setTab('salud')} className="text-[9px] font-black uppercase tracking-widest text-secondary hover:underline">Ver todos</button>
-                                            </div>
-                                            <div className="space-y-4 flex-1">
-                                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rounded-2xl border border-gray-50 bg-[#F8F9FA] p-4 transition-colors hover:bg-gray-50 cursor-pointer">
-                                                    <div className="flex items-center gap-4 min-w-0">
-                                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
-                                                            <span className="material-symbols-outlined text-primary text-xl">radiology</span>
-                                                        </div>
-                                                        <div className="min-w-0">
-                                                            <p className="text-sm font-black text-primary uppercase truncate">Ecografía Abdominal</p>
-                                                            <p className="mt-0.5 text-xs font-semibold text-gray-400">Hace 2 días</p>
-                                                        </div>
+                                                    <div className="flex relative z-10 border-t border-white/10 pt-6">
+                                                        <button className="w-full sm:w-auto rounded-xl border border-white/20 bg-transparent px-6 py-3 text-[11px] font-black uppercase tracking-widest text-white transition-colors hover:bg-red-500/20 hover:border-red-500/50 flex items-center justify-center gap-2">
+                                                            <span className="material-symbols-outlined text-[18px]">event_busy</span> Cancelar Turno
+                                                        </button>
                                                     </div>
-                                                    <span className="w-fit shrink-0 rounded-full bg-green-100 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-green-700">Disponible</span>
                                                 </div>
-                                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rounded-2xl border border-gray-50 bg-[#F8F9FA] p-4 transition-colors hover:bg-gray-50 cursor-pointer">
-                                                    <div className="flex items-center gap-4 min-w-0">
-                                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
-                                                            <span className="material-symbols-outlined text-primary text-xl">bloodtype</span>
+                                            ) : (
+                                                <div className="relative flex min-h-[220px] flex-col items-center justify-center overflow-hidden rounded-[2rem] bg-[#F8F9FA] p-8 text-center border border-dashed border-gray-200">
+                                                    <span className="material-symbols-outlined text-4xl text-gray-300 mb-3">event_available</span>
+                                                    <h3 className="text-lg font-black tracking-tight text-primary uppercase">Sin turnos próximos</h3>
+                                                    <p className="text-sm font-semibold text-gray-400">Actualmente no tenés citas programadas.</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="w-full">
+                                            <div className="rounded-[2rem] border border-gray-100 bg-white p-6 sm:p-8 shadow-sm h-full flex flex-col">
+                                                <div className="mb-6 flex items-center justify-between">
+                                                    <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Últimos Resultados</h2>
+                                                    <button onClick={() => setTab('salud')} className="text-[9px] font-black uppercase tracking-widest text-secondary hover:underline">Ver todos</button>
+                                                </div>
+                                                <div className="space-y-4 flex-1">
+                                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rounded-2xl border border-gray-50 bg-[#F8F9FA] p-4 transition-colors hover:bg-gray-50 cursor-pointer">
+                                                        <div className="flex items-center gap-4 min-w-0">
+                                                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
+                                                                <span className="material-symbols-outlined text-primary text-xl">radiology</span>
+                                                            </div>
+                                                            <div className="min-w-0">
+                                                                <p className="text-sm font-black text-primary uppercase truncate">Ecografía Abdominal</p>
+                                                                <p className="mt-0.5 text-xs font-semibold text-gray-400">Hace 2 días</p>
+                                                            </div>
                                                         </div>
-                                                        <div className="min-w-0">
-                                                            <p className="text-sm font-black text-primary uppercase truncate">Análisis de Sangre Completo</p>
-                                                            <p className="mt-0.5 text-xs font-semibold text-gray-400">Hoy</p>
-                                                        </div>
+                                                        <span className="w-fit shrink-0 rounded-full bg-green-100 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-green-700">Disponible</span>
                                                     </div>
-                                                    <span className="w-fit shrink-0 rounded-full bg-amber-100 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-amber-700">Proceso</span>
+                                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rounded-2xl border border-gray-50 bg-[#F8F9FA] p-4 transition-colors hover:bg-gray-50 cursor-pointer">
+                                                        <div className="flex items-center gap-4 min-w-0">
+                                                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
+                                                                <span className="material-symbols-outlined text-primary text-xl">bloodtype</span>
+                                                            </div>
+                                                            <div className="min-w-0">
+                                                                <p className="text-sm font-black text-primary uppercase truncate">Análisis de Sangre Completo</p>
+                                                                <p className="mt-0.5 text-xs font-semibold text-gray-400">Hoy</p>
+                                                            </div>
+                                                        </div>
+                                                        <span className="w-fit shrink-0 rounded-full bg-amber-100 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-amber-700">Proceso</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
 
-                        {/* =========================================
-                            SECCIÓN 2: MIS TURNOS (Rediseñada)
-                        ========================================= */}
-                        {tab === 'turnos' && (
-                            <div className="mx-auto max-w-6xl">
-                                
-                                {/* HEADER: Título y Botón Principal (Mismo botón que el inicio) */}
-                                <div className="mb-8 flex flex-col md:flex-row items-start md:items-end justify-between gap-4 border-b border-gray-100 pb-6">
-                                    <div>
-                                        <h1 className="mb-2 text-3xl font-black tracking-tight text-primary lg:text-4xl uppercase">Mis Turnos</h1>
-                                        <p className="font-semibold text-brandText">Gestione sus citas médicas y revise su historial.</p>
+                            {/* =========================================
+                                SECCIÓN 2: MIS TURNOS
+                            ========================================= */}
+                            {tab === 'turnos' && (
+                                <div className="mx-auto max-w-6xl">
+                                    <div className="mb-8 flex flex-col md:flex-row items-start md:items-end justify-between gap-4 border-b border-gray-100 pb-6">
+                                        <div>
+                                            <h1 className="mb-2 text-3xl font-black tracking-tight text-primary lg:text-4xl uppercase">Mis Turnos</h1>
+                                            <p className="font-semibold text-brandText">Gestione sus citas médicas y revise su historial.</p>
+                                        </div>
+                                        <button className="group flex w-full md:w-auto shrink-0 items-center justify-center gap-3 rounded-2xl bg-secondary px-8 py-4 text-[12px] font-black uppercase tracking-widest text-white shadow-xl shadow-secondary/30 transition-all hover:scale-105 hover:bg-[#B38F5A]">
+                                            <span className="material-symbols-outlined text-[24px] transition-transform group-hover:rotate-12">calendar_add_on</span>
+                                            Solicitar Nuevo Turno
+                                        </button>
                                     </div>
-                                    <button className="group flex w-full md:w-auto shrink-0 items-center justify-center gap-3 rounded-2xl bg-secondary px-8 py-4 text-[12px] font-black uppercase tracking-widest text-white shadow-xl shadow-secondary/30 transition-all hover:scale-105 hover:bg-[#B38F5A]">
-                                        <span className="material-symbols-outlined text-[24px] transition-transform group-hover:rotate-12">calendar_add_on</span>
-                                        Solicitar Nuevo Turno
-                                    </button>
-                                </div>
 
-                                {/* PÍLDORAS DE NAVEGACIÓN (Sub-Tabs) */}
-                                <div className="mb-8 flex p-1 bg-[#F8F9FA] w-fit rounded-xl border border-gray-100">
-                                    <button 
-                                        onClick={() => setSubTabTurnos('proximos')} 
-                                        className={`px-6 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${subTabTurnos === 'proximos' ? 'bg-white text-primary shadow-sm' : 'text-gray-400 hover:text-brandText'}`}
-                                    >
-                                        Próximos Turnos
-                                    </button>
-                                    <button 
-                                        onClick={() => setSubTabTurnos('historial')} 
-                                        className={`px-6 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${subTabTurnos === 'historial' ? 'bg-white text-primary shadow-sm' : 'text-gray-400 hover:text-brandText'}`}
-                                    >
-                                        Historial de Visitas
-                                    </button>
-                                </div>
-                                
-                                {/* VISTA 1: PRÓXIMOS TURNOS (Optimizado) */}
+                                    <div className="mb-8 flex p-1 bg-[#F8F9FA] w-fit rounded-xl border border-gray-100">
+                                        <button onClick={() => setSubTabTurnos('proximos')} className={`px-6 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${subTabTurnos === 'proximos' ? 'bg-white text-primary shadow-sm' : 'text-gray-400 hover:text-brandText'}`}>
+                                            Próximos Turnos
+                                        </button>
+                                        <button onClick={() => setSubTabTurnos('historial')} className={`px-6 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${subTabTurnos === 'historial' ? 'bg-white text-primary shadow-sm' : 'text-gray-400 hover:text-brandText'}`}>
+                                            Historial de Visitas
+                                        </button>
+                                    </div>
+                                    
+                                    {/* VISTA 1: PRÓXIMOS TURNOS */}
                                     {subTabTurnos === 'proximos' && (
                                         <div className="overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-sm animate-fade-in">
-                                            {/* Header: 5 Columnas Simétricas */}
                                             <div className="hidden grid-cols-5 border-b border-gray-100 bg-[#F8F9FA] px-10 py-5 lg:grid">
                                                 <span className="text-[10px] font-black uppercase tracking-widest text-brandText">Especialidad</span>
                                                 <span className="text-[10px] font-black uppercase tracking-widest text-brandText">Médico</span>
@@ -287,18 +284,13 @@ export default function Dashboard({ auth, turnos = [] }) {
                                                 <div className="flex flex-col">
                                                     {turnosFuturos.map((turno) => (
                                                         <div key={turno.id} className="grid gap-4 border-b border-gray-50 px-6 py-6 transition-colors hover:bg-[#F8F9FA] lg:grid-cols-5 lg:items-center lg:px-10">
-                                                            {/* 1. Especialidad */}
                                                             <div className="min-w-0">
                                                                 <p className="text-sm font-black uppercase text-primary truncate">{turno.especialidad}</p>
                                                                 <span className="lg:hidden block mt-1 rounded-full bg-blue-50 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-primary w-fit">Confirmado</span>
                                                             </div>
-                                                            
-                                                            {/* 2. Médico */}
                                                             <div className="min-w-0">
                                                                 <p className="text-xs font-semibold text-gray-500 truncate">Dr/a. {turno.medico_nombre}</p>
                                                             </div>
-
-                                                            {/* 3. Fecha */}
                                                             <div>
                                                                 <p className="text-sm font-bold text-brandText">
                                                                     {new Date(turno.fecha_hora).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })}
@@ -307,18 +299,13 @@ export default function Dashboard({ auth, turnos = [] }) {
                                                                     {new Date(turno.fecha_hora).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })} hs
                                                                 </p>
                                                             </div>
-
-                                                            {/* 4. Sede (Nuevo dato útil) */}
                                                             <div className="hidden lg:block">
                                                                 <p className="text-xs font-bold text-gray-400 uppercase tracking-tight">Sede Central</p>
                                                                 <p className="text-[10px] font-medium text-gray-400">Consultorio 04</p>
                                                             </div>
-                                                            
-                                                            {/* 5. Acción (Centrada) */}
                                                             <div className="flex justify-start lg:justify-center">
                                                                 <button className="w-full lg:w-auto text-[10px] font-black uppercase tracking-widest text-red-500 bg-red-50 px-5 py-2.5 rounded-xl hover:bg-red-100 transition-colors flex items-center justify-center gap-2">
-                                                                    <span className="material-symbols-outlined text-[18px]">event_busy</span>
-                                                                    Cancelar
+                                                                    <span className="material-symbols-outlined text-[18px]">event_busy</span> Cancelar
                                                                 </button>
                                                             </div>
                                                         </div>
@@ -333,54 +320,474 @@ export default function Dashboard({ auth, turnos = [] }) {
                                         </div>
                                     )}
 
-                                {/* VISTA 2: HISTORIAL DE VISITAS */}
-                                {subTabTurnos === 'historial' && (
-                                    <div className="overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-sm animate-fade-in">
-                                        <div className="hidden grid-cols-4 border-b border-gray-100 bg-[#F8F9FA] px-10 py-5 lg:grid">
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-brandText col-span-2">Especialidad y Médico</span>
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-brandText">Atención</span>
-                                            <span className="text-center text-[10px] font-black uppercase tracking-widest text-brandText">Acciones</span>
-                                        </div>
-                                        {turnosPasados.length > 0 ? (
-                                            <div className="flex flex-col">
-                                                {turnosPasados.map((turno) => (
-                                                    <div key={turno.id} className="grid gap-4 border-b border-gray-50 px-6 py-6 transition-colors hover:bg-[#F8F9FA] lg:grid-cols-4 lg:items-center lg:px-10 opacity-70 hover:opacity-100">
-                                                        <div className="lg:col-span-2">
-                                                            <div className="flex items-center gap-3 mb-1">
-                                                                <p className="text-sm font-black uppercase text-primary">{turno.especialidad}</p>
-                                                                <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-gray-500">Asistió</span>
+                                    {/* VISTA 2: HISTORIAL DE VISITAS */}
+                                    {subTabTurnos === 'historial' && (
+                                        <div className="overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-sm animate-fade-in">
+                                            <div className="hidden grid-cols-4 border-b border-gray-100 bg-[#F8F9FA] px-10 py-5 lg:grid">
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-brandText col-span-2">Especialidad y Médico</span>
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-brandText">Atención</span>
+                                                <span className="text-center text-[10px] font-black uppercase tracking-widest text-brandText">Acciones</span>
+                                            </div>
+                                            {turnosPasados.length > 0 ? (
+                                                <div className="flex flex-col">
+                                                    {turnosPasados.map((turno) => (
+                                                        <div key={turno.id} className="grid gap-4 border-b border-gray-50 px-6 py-6 transition-colors hover:bg-[#F8F9FA] lg:grid-cols-4 lg:items-center lg:px-10 opacity-70 hover:opacity-100">
+                                                            <div className="lg:col-span-2">
+                                                                <div className="flex items-center gap-3 mb-1">
+                                                                    <p className="text-sm font-black uppercase text-primary">{turno.especialidad}</p>
+                                                                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-gray-500">Asistió</span>
+                                                                </div>
+                                                                <p className="text-xs font-semibold text-gray-500">Dr/a. {turno.medico_nombre}</p>
                                                             </div>
-                                                            <p className="text-xs font-semibold text-gray-500">Dr/a. {turno.medico_nombre}</p>
+                                                            <div>
+                                                                <p className="text-sm font-bold text-gray-500">
+                                                                    {new Date(turno.fecha_hora).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                                </p>
+                                                            </div>
+                                                            <div className="flex flex-wrap lg:justify-end gap-2 mt-2 lg:mt-0">
+                                                                <button className="text-[10px] font-black uppercase tracking-widest text-secondary hover:underline flex items-center gap-1">
+                                                                    <span className="material-symbols-outlined text-[16px]">description</span> Ver resumen
+                                                                </button>
+                                                            </div>
                                                         </div>
-                                                        <div>
-                                                            <p className="text-sm font-bold text-gray-500">
-                                                                {new Date(turno.fecha_hora).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })}
-                                                            </p>
-                                                        </div>
-                                                        <div className="flex flex-wrap lg:justify-end gap-2 mt-2 lg:mt-0">
-                                                            <button className="text-[10px] font-black uppercase tracking-widest text-secondary hover:underline flex items-center gap-1">
-                                                                <span className="material-symbols-outlined text-[16px]">description</span> Ver resumen
-                                                            </button>
-                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="flex min-h-[300px] flex-col items-center justify-center p-8 text-center">
+                                                    <span className="material-symbols-outlined text-5xl text-gray-300 mb-4">history_toggle_off</span>
+                                                    <h3 className="mb-2 text-xl font-black tracking-tight text-primary uppercase">No hay historial</h3>
+                                                    <p className="text-sm font-semibold text-gray-400">Sus visitas médicas aparecerán aquí una vez finalizadas.</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* =========================================
+                            SECCIÓN 3: MI SALUD
+                            ========================================= */}
+                            {tab === 'salud' && (
+                                <div className="mx-auto max-w-6xl">
+                                    
+                                    {/* HEADER LIMPIO (Sin el botón duplicado) */}
+                                    <div className="mb-8 flex flex-col md:flex-row items-start md:items-end justify-between gap-4 border-b border-gray-100 pb-6">
+                                        <div>
+                                            <h1 className="mb-2 text-3xl font-black tracking-tight text-primary lg:text-4xl uppercase">Mi Salud</h1>
+                                            <p className="font-semibold text-brandText">Su historial clínico, resultados de estudios y recetas médicas.</p>
+                                        </div>
+                                        {/* El botón de 'Subir Estudio' fue eliminado para centralizar la subida en 'Documentos' */}
+                                    </div>
+
+                                {/* PÍLDORAS DE NAVEGACIÓN (Sub-Tabs) */}
+                                <div className="mb-8 flex p-1 bg-[#F8F9FA] w-fit rounded-xl border border-gray-100 overflow-x-auto max-w-full">
+                                    <button onClick={() => setSubTabSalud('resultados')} className={`whitespace-nowrap px-6 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${subTabSalud === 'resultados' ? 'bg-white text-primary shadow-sm' : 'text-gray-400 hover:text-brandText'}`}>
+                                        Resultados y Estudios
+                                    </button>
+                                    <button onClick={() => setSubTabSalud('recetas')} className={`whitespace-nowrap px-6 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${subTabSalud === 'recetas' ? 'bg-white text-primary shadow-sm' : 'text-gray-400 hover:text-brandText'}`}>
+                                        Mis Recetas
+                                    </button>
+                                    <button onClick={() => setSubTabSalud('perfil')} className={`whitespace-nowrap px-6 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${subTabSalud === 'perfil' ? 'bg-white text-primary shadow-sm' : 'text-gray-400 hover:text-brandText'}`}>
+                                        Perfil Clínico
+                                    </button>
+                                </div>
+                                
+                                {/* VISTA 1: RESULTADOS Y ESTUDIOS */}
+                                {subTabSalud === 'resultados' && (
+                                    <div className="overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-sm animate-fade-in">
+                                        <div className="hidden grid-cols-5 border-b border-gray-100 bg-[#F8F9FA] px-10 py-5 lg:grid">
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-brandText col-span-2">Estudio Requerido</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-brandText">Fecha</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-brandText">Estado</span>
+                                            <span className="text-center text-[10px] font-black uppercase tracking-widest text-brandText">Descarga</span>
+                                        </div>
+
+                                        <div className="flex flex-col">
+                                            {/* Item: Estudio Terminado */}
+                                            <div className="grid gap-4 border-b border-gray-50 px-6 py-6 transition-colors hover:bg-[#F8F9FA] lg:grid-cols-5 lg:items-center lg:px-10">
+                                                <div className="lg:col-span-2 flex items-center gap-4 min-w-0">
+                                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-50 text-primary">
+                                                        <span className="material-symbols-outlined text-[24px]">radiology</span>
                                                     </div>
-                                                ))}
+                                                    <div className="min-w-0">
+                                                        <p className="text-sm font-black uppercase text-primary truncate">Ecografía Abdominal Completa</p>
+                                                        <p className="mt-0.5 text-xs font-semibold text-gray-500 truncate">Ordenado por: Dr. Favaloro</p>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-bold text-brandText">15 de Abril, 2026</p>
+                                                </div>
+                                                <div>
+                                                    <span className="rounded-full bg-green-100 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-green-700">Disponible</span>
+                                                </div>
+                                                <div className="flex justify-start lg:justify-center mt-2 lg:mt-0">
+                                                    <button className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-white transition-colors hover:bg-secondary">
+                                                        <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span> PDF
+                                                    </button>
+                                                </div>
                                             </div>
-                                        ) : (
-                                            <div className="flex min-h-[300px] flex-col items-center justify-center p-8 text-center">
-                                                <span className="material-symbols-outlined text-5xl text-gray-300 mb-4">history_toggle_off</span>
-                                                <h3 className="mb-2 text-xl font-black tracking-tight text-primary uppercase">No hay historial</h3>
-                                                <p className="text-sm font-semibold text-gray-400">Sus visitas médicas aparecerán aquí una vez finalizadas.</p>
+
+                                            {/* Item: Estudio en Proceso */}
+                                            <div className="grid gap-4 border-b border-gray-50 px-6 py-6 transition-colors hover:bg-[#F8F9FA] lg:grid-cols-5 lg:items-center lg:px-10 opacity-70">
+                                                <div className="lg:col-span-2 flex items-center gap-4 min-w-0">
+                                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-600">
+                                                        <span className="material-symbols-outlined text-[24px]">bloodtype</span>
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <p className="text-sm font-black uppercase text-primary truncate">Análisis de Sangre Completo</p>
+                                                        <p className="mt-0.5 text-xs font-semibold text-gray-500 truncate">Ordenado por: Dra. Martinez</p>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-bold text-brandText">Hoy</p>
+                                                </div>
+                                                <div>
+                                                    <span className="rounded-full bg-amber-100 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-amber-700">Analizando</span>
+                                                </div>
+                                                <div className="flex justify-start lg:justify-center mt-2 lg:mt-0">
+                                                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Demora: 48hs</span>
+                                                </div>
                                             </div>
-                                        )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* VISTA 2: RECETAS */}
+                                {subTabSalud === 'recetas' && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
+                                        {/* Tarjeta de Receta */}
+                                        <div className="relative overflow-hidden rounded-[2rem] border border-gray-100 bg-white p-8 shadow-sm transition-shadow hover:shadow-md">
+                                            <div className="mb-6 flex items-start justify-between">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-primary">
+                                                        <span className="material-symbols-outlined text-[28px]">prescriptions</span>
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="text-lg font-black uppercase tracking-tight text-primary">Losartán 50mg</h3>
+                                                        <span className="rounded bg-green-100 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-green-700">Tratamiento Crónico</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="mb-8 space-y-3 rounded-2xl bg-[#F8F9FA] p-5">
+                                                <div className="flex justify-between border-b border-gray-100 pb-2">
+                                                    <span className="text-xs font-semibold text-gray-400">Indicación</span>
+                                                    <span className="text-xs font-black text-primary uppercase">1 comprimido cada 12hs</span>
+                                                </div>
+                                                <div className="flex justify-between border-b border-gray-100 pb-2">
+                                                    <span className="text-xs font-semibold text-gray-400">Profesional</span>
+                                                    <span className="text-xs font-black text-primary uppercase">Dr. Favaloro</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-xs font-semibold text-gray-400">Vencimiento Receta</span>
+                                                    <span className="text-xs font-black text-red-500 uppercase">En 5 días</span>
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-3">
+                                                <button className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white transition-colors hover:bg-secondary">
+                                                    <span className="material-symbols-outlined text-[16px]">qr_code_2</span> Ver QR en Farmacia
+                                                </button>
+                                                <button className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-[10px] font-black uppercase tracking-widest text-primary transition-colors hover:bg-gray-50">
+                                                    <span className="material-symbols-outlined text-[16px]">autorenew</span> Renovar
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* VISTA 3: PERFIL CLÍNICO */}
+                                {subTabSalud === 'perfil' && (
+                                    <div className="flex min-h-[300px] flex-col items-center justify-center rounded-[2rem] border border-gray-100 bg-white p-8 text-center shadow-sm animate-fade-in">
+                                        <span className="material-symbols-outlined text-5xl text-gray-300 mb-4">medical_information</span>
+                                        <h3 className="mb-2 text-xl font-black tracking-tight text-primary uppercase">Perfil Clínico </h3>
+                                        <p className="text-sm font-semibold text-gray-400">Visualizar antecedentes aquí.</p>
                                     </div>
                                 )}
                             </div>
-                        )}
+                        )}            
 
-                        {/* RESTO DE SECCIONES */}
-                        {tab === 'salud' && ( <div> <h1 className="mb-8 border-b border-gray-100 pb-4 text-3xl font-black uppercase tracking-widest text-gray-300">Mi Salud</h1> </div> )}
-                        {tab === 'cartilla' && ( <div> <h1 className="mb-8 border-b border-gray-100 pb-4 text-3xl font-black uppercase tracking-widest text-gray-300">Cartilla Médica</h1> </div> )}
-                        {tab === 'documentos' && ( <div> <h1 className="mb-8 border-b border-gray-100 pb-4 text-3xl font-black uppercase tracking-widest text-gray-300">Mis Documentos</h1> </div> )}
+                            {/* =========================================
+                            SECCIÓN 4: CARTILLA MÉDICA
+                            ========================================= */}
+                            {tab === 'cartilla' && (
+                            <div className="mx-auto max-w-6xl">
+                                
+                                {/* HEADER LIMPIO (Sin buscador central) */}
+                                <div className="mb-8 flex flex-col md:flex-row items-start md:items-end justify-between gap-4 border-b border-gray-100 pb-6">
+                                    <div>
+                                        <h1 className="mb-2 text-3xl font-black tracking-tight text-primary lg:text-4xl uppercase">Cartilla Médica</h1>
+                                        <p className="font-semibold text-brandText">Directorio de profesionales y especialidades del Hospital.</p>
+                                    </div>
+                                </div>
+
+                                {/* PÍLDORAS DE NAVEGACIÓN (Sub-Tabs) */}
+                                <div className="mb-8 flex p-1 bg-[#F8F9FA] w-fit rounded-xl border border-gray-100">
+                                    <button 
+                                        onClick={() => setSubTabCartilla('especialidades')} 
+                                        className={`px-6 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${subTabCartilla === 'especialidades' ? 'bg-white text-primary shadow-sm' : 'text-gray-400 hover:text-brandText'}`}
+                                    >
+                                        Especialidades
+                                    </button>
+                                    <button 
+                                        onClick={() => setSubTabCartilla('profesionales')} 
+                                        className={`px-6 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${subTabCartilla === 'profesionales' ? 'bg-white text-primary shadow-sm' : 'text-gray-400 hover:text-brandText'}`}
+                                    >
+                                        Profesionales A-Z
+                                    </button>
+                                </div>
+
+                                {/* VISTA 1: ESPECIALIDADES (Catálogo visual) */}
+                                {subTabCartilla === 'especialidades' && (
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
+                                        
+                                        <div className="group flex cursor-pointer flex-col justify-between overflow-hidden rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:border-secondary/30 hover:shadow-lg">
+                                            <div className="mb-4 flex items-start justify-between">
+                                                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-500 transition-transform group-hover:scale-110">
+                                                    <span className="material-symbols-outlined text-[32px]">cardiology</span>
+                                                </div>
+                                                <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-gray-500">12 Profesionales</span>
+                                            </div>
+                                            <div>
+                                                <h3 className="mb-1 text-lg font-black uppercase tracking-tight text-primary transition-colors group-hover:text-secondary">Cardiología</h3>
+                                                <p className="text-xs font-medium text-gray-400">Adultos e Infantil. Estudios complementarios.</p>
+                                            </div>
+                                            <div className="mt-6 flex items-center justify-between border-t border-gray-50 pt-4 opacity-0 transition-opacity group-hover:opacity-100">
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-secondary">Ver plantel</span>
+                                                <span className="material-symbols-outlined text-secondary">arrow_forward</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="group flex cursor-pointer flex-col justify-between overflow-hidden rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:border-secondary/30 hover:shadow-lg">
+                                            <div className="mb-4 flex items-start justify-between">
+                                                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-primary transition-transform group-hover:scale-110">
+                                                    <span className="material-symbols-outlined text-[32px]">child_care</span>
+                                                </div>
+                                                <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-gray-500">8 Profesionales</span>
+                                            </div>
+                                            <div>
+                                                <h3 className="mb-1 text-lg font-black uppercase tracking-tight text-primary transition-colors group-hover:text-secondary">Pediatría</h3>
+                                                <p className="text-xs font-medium text-gray-400">Atención integral del niño y adolescente.</p>
+                                            </div>
+                                            <div className="mt-6 flex items-center justify-between border-t border-gray-50 pt-4 opacity-0 transition-opacity group-hover:opacity-100">
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-secondary">Ver plantel</span>
+                                                <span className="material-symbols-outlined text-secondary">arrow_forward</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="group flex cursor-pointer flex-col justify-between overflow-hidden rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:border-secondary/30 hover:shadow-lg">
+                                            <div className="mb-4 flex items-start justify-between">
+                                                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 transition-transform group-hover:scale-110">
+                                                    <span className="material-symbols-outlined text-[32px]">neurology</span>
+                                                </div>
+                                                <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-gray-500">5 Profesionales</span>
+                                            </div>
+                                            <div>
+                                                <h3 className="mb-1 text-lg font-black uppercase tracking-tight text-primary transition-colors group-hover:text-secondary">Neurología</h3>
+                                                <p className="text-xs font-medium text-gray-400">Diagnóstico y tratamiento de patologías neurológicas.</p>
+                                            </div>
+                                            <div className="mt-6 flex items-center justify-between border-t border-gray-50 pt-4 opacity-0 transition-opacity group-hover:opacity-100">
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-secondary">Ver plantel</span>
+                                                <span className="material-symbols-outlined text-secondary">arrow_forward</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* VISTA 2: PROFESIONALES (Con barra de filtros) */}
+                                {subTabCartilla === 'profesionales' && (
+                                    <div className="animate-fade-in">
+                                        
+                                        {/* BARRA DE FILTROS LÓGICA */}
+                                        <div className="mb-8 flex flex-col md:flex-row gap-4 rounded-2xl bg-[#F8F9FA] border border-gray-100 p-4">
+                                            <div className="flex-1">
+                                                <label className="mb-1.5 ml-1 block text-[9px] font-black uppercase tracking-widest text-gray-400">Especialidad</label>
+                                                <select className="w-full rounded-xl border-none bg-white py-3 pl-4 pr-10 text-sm font-bold text-primary shadow-sm outline-none focus:ring-2 focus:ring-secondary/20 appearance-none cursor-pointer">
+                                                    <option value="">Todas las especialidades</option>
+                                                    <option value="cardiologia">Cardiología</option>
+                                                    <option value="pediatria">Pediatría</option>
+                                                    <option value="neurologia">Neurología</option>
+                                                </select>
+                                            </div>
+                                            <div className="flex-1">
+                                                <label className="mb-1.5 ml-1 block text-[9px] font-black uppercase tracking-widest text-gray-400">Sede</label>
+                                                <select className="w-full rounded-xl border-none bg-white py-3 pl-4 pr-10 text-sm font-bold text-primary shadow-sm outline-none focus:ring-2 focus:ring-secondary/20 appearance-none cursor-pointer">
+                                                    <option value="">Todas las sedes</option>
+                                                    <option value="central">Sede Central</option>
+                                                    <option value="lujan">Sede Luján</option>
+                                                </select>
+                                            </div>
+                                            <div className="flex-1">
+                                                <label className="mb-1.5 ml-1 block text-[9px] font-black uppercase tracking-widest text-gray-400">Obra Social / Prepaga</label>
+                                                <select className="w-full rounded-xl border-none bg-white py-3 pl-4 pr-10 text-sm font-bold text-primary shadow-sm outline-none focus:ring-2 focus:ring-secondary/20 appearance-none cursor-pointer">
+                                                    <option value="">Cualquiera</option>
+                                                    <option value="particular">Particular</option>
+                                                    <option value="osde">OSDE</option>
+                                                    <option value="osep">OSEP</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        {/* GRILLA DE PROFESIONALES (Limpias, sin indicadores falsos) */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            
+                                            <div className="flex flex-col sm:flex-row gap-6 overflow-hidden rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+                                                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[#F8F9FA] text-gray-300">
+                                                    <span className="material-symbols-outlined text-[36px]">person</span>
+                                                </div>
+                                                <div className="flex flex-1 flex-col justify-between">
+                                                    <div>
+                                                        <h3 className="mb-0.5 text-lg font-black tracking-tight text-primary uppercase">Dr. Favaloro, Roberto</h3>
+                                                        <p className="text-[10px] font-black uppercase tracking-widest text-secondary mb-2">Cardiología</p>
+                                                        <p className="text-sm font-semibold text-gray-500">Sede Central</p>
+                                                    </div>
+                                                    <div className="mt-4 flex gap-3">
+                                                        <button className="flex-1 rounded-xl border border-gray-100 bg-white px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-primary transition-colors hover:bg-gray-50 hover:border-gray-200 text-center">
+                                                            Ver Perfil
+                                                        </button>
+                                                        <button className="flex-1 rounded-xl bg-primary px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-white transition-colors hover:bg-secondary text-center">
+                                                            Sacar Turno
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex flex-col sm:flex-row gap-6 overflow-hidden rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+                                                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[#F8F9FA] text-gray-300">
+                                                    <span className="material-symbols-outlined text-[36px]">person_4</span>
+                                                </div>
+                                                <div className="flex flex-1 flex-col justify-between">
+                                                    <div>
+                                                        <h3 className="mb-0.5 text-lg font-black tracking-tight text-primary uppercase">Dra. Martinez, Ana</h3>
+                                                        <p className="text-[10px] font-black uppercase tracking-widest text-secondary mb-2">Pediatría</p>
+                                                        <p className="text-sm font-semibold text-gray-500">Sede Luján</p>
+                                                    </div>
+                                                    <div className="mt-4 flex gap-3">
+                                                        <button className="flex-1 rounded-xl border border-gray-100 bg-white px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-primary transition-colors hover:bg-gray-50 hover:border-gray-200 text-center">
+                                                            Ver Perfil
+                                                        </button>
+                                                        <button className="flex-1 rounded-xl bg-primary px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-white transition-colors hover:bg-secondary text-center">
+                                                            Sacar Turno
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}                 
+                        
+                        {/* =========================================
+                            SECCIÓN 5: MIS DOCUMENTOS
+                        ========================================= */}
+                        {tab === 'documentos' && (
+                            <div className="mx-auto max-w-6xl animate-fade-in">
+                                
+                                {/* HEADER Y BOTÓN DE SUBIDA */}
+                                <div className="mb-8 flex flex-col md:flex-row items-start md:items-end justify-between gap-4 border-b border-gray-100 pb-6">
+                                    <div>
+                                        <h1 className="mb-2 text-3xl font-black tracking-tight text-primary lg:text-4xl uppercase">Mis Documentos</h1>
+                                        <p className="font-semibold text-brandText">Gestión de certificados, facturación y archivos personales.</p>
+                                    </div>
+                                    <button className="group flex w-full md:w-auto shrink-0 items-center justify-center gap-3 rounded-2xl bg-secondary px-8 py-4 text-[12px] font-black uppercase tracking-widest text-white shadow-xl shadow-secondary/30 transition-all hover:scale-105 hover:bg-[#B38F5A]">
+                                        <span className="material-symbols-outlined text-[24px] transition-transform group-hover:-translate-y-1">cloud_upload</span>
+                                        Subir Archivo
+                                    </button>
+                                </div>
+
+                                {/* CARPETAS / CATEGORÍAS (Para no abrumar con listas) */}
+                                <div className="mb-10 grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    
+                                    <div className="group cursor-pointer rounded-[2rem] border border-gray-100 bg-[#F8F9FA] p-6 transition-all hover:border-secondary/30 hover:bg-white hover:shadow-md">
+                                        <div className="mb-4 flex items-center justify-between">
+                                            <span className="material-symbols-outlined text-[40px] text-blue-200 transition-colors group-hover:text-secondary">folder</span>
+                                            <span className="rounded-full bg-white px-3 py-1 text-[10px] font-black uppercase tracking-widest text-gray-400 shadow-sm">4 Archivos</span>
+                                        </div>
+                                        <h3 className="text-lg font-black uppercase tracking-tight text-primary">Certificados</h3>
+                                        <p className="mt-1 text-xs font-semibold text-gray-500">Aptos físicos y justificativos.</p>
+                                    </div>
+                                    
+                                    <div className="group cursor-pointer rounded-[2rem] border border-gray-100 bg-[#F8F9FA] p-6 transition-all hover:border-secondary/30 hover:bg-white hover:shadow-md">
+                                        <div className="mb-4 flex items-center justify-between">
+                                            <span className="material-symbols-outlined text-[40px] text-blue-200 transition-colors group-hover:text-secondary">folder</span>
+                                            <span className="rounded-full bg-white px-3 py-1 text-[10px] font-black uppercase tracking-widest text-gray-400 shadow-sm">12 Archivos</span>
+                                        </div>
+                                        <h3 className="text-lg font-black uppercase tracking-tight text-primary">Facturación</h3>
+                                        <p className="mt-1 text-xs font-semibold text-gray-500">Comprobantes y copagos.</p>
+                                    </div>
+                                    
+                                    <div className="group cursor-pointer rounded-[2rem] border border-gray-100 bg-[#F8F9FA] p-6 transition-all hover:border-secondary/30 hover:bg-white hover:shadow-md">
+                                        <div className="mb-4 flex items-center justify-between">
+                                            <span className="material-symbols-outlined text-[40px] text-blue-200 transition-colors group-hover:text-secondary">folder_shared</span>
+                                            <span className="rounded-full bg-white px-3 py-1 text-[10px] font-black uppercase tracking-widest text-gray-400 shadow-sm">2 Archivos</span>
+                                        </div>
+                                        <h3 className="text-lg font-black uppercase tracking-tight text-primary">Mis Subidas</h3>
+                                        <p className="mt-1 text-xs font-semibold text-gray-500">DNI, credenciales, externos.</p>
+                                    </div>
+
+                                </div>
+
+                                {/* LISTA DE ARCHIVOS RECIENTES */}
+                                <h2 className="mb-6 text-[11px] font-black uppercase tracking-[0.3em] text-gray-400">Agregados Recientemente</h2>
+                                
+                                <div className="overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-sm">
+                                    <div className="hidden grid-cols-12 border-b border-gray-100 bg-[#F8F9FA] px-8 py-5 md:grid">
+                                        <span className="col-span-6 text-[10px] font-black uppercase tracking-widest text-brandText">Nombre del Archivo</span>
+                                        <span className="col-span-3 text-[10px] font-black uppercase tracking-widest text-brandText">Categoría</span>
+                                        <span className="col-span-3 text-right text-[10px] font-black uppercase tracking-widest text-brandText">Acción</span>
+                                    </div>
+                                    
+                                    <div className="flex flex-col">
+                                        {/* Archivo 1 (PDF) */}
+                                        <div className="grid grid-cols-1 items-center gap-4 border-b border-gray-50 px-6 py-4 transition-colors hover:bg-[#F8F9FA] md:grid-cols-12 md:px-8">
+                                            <div className="col-span-6 flex items-center gap-4 min-w-0">
+                                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-500">
+                                                    <span className="material-symbols-outlined text-[20px]">picture_as_pdf</span>
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="text-sm font-black text-primary truncate">Certificado_Apto_Fisico_2026.pdf</p>
+                                                    <p className="mt-0.5 text-[10px] font-semibold text-gray-400">15 Abr 2026 • 245 KB</p>
+                                                </div>
+                                            </div>
+                                            <div className="col-span-3 hidden md:block">
+                                                <span className="rounded-full bg-gray-100 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-gray-500">Certificados</span>
+                                            </div>
+                                            <div className="col-span-3 flex justify-start md:justify-end">
+                                                <button className="flex items-center gap-2 rounded-lg text-[10px] font-black uppercase tracking-widest text-secondary hover:underline">
+                                                    <span className="material-symbols-outlined text-[18px]">download</span> Descargar
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* Archivo 2 (Texto/Factura) */}
+                                        <div className="grid grid-cols-1 items-center gap-4 border-b border-gray-50 px-6 py-4 transition-colors hover:bg-[#F8F9FA] md:grid-cols-12 md:px-8">
+                                            <div className="col-span-6 flex items-center gap-4 min-w-0">
+                                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-primary">
+                                                    <span className="material-symbols-outlined text-[20px]">receipt_long</span>
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="text-sm font-black text-primary truncate">Factura_0001_00004492.pdf</p>
+                                                    <p className="mt-0.5 text-[10px] font-semibold text-gray-400">10 Abr 2026 • 120 KB</p>
+                                                </div>
+                                            </div>
+                                            <div className="col-span-3 hidden md:block">
+                                                <span className="rounded-full bg-gray-100 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-gray-500">Facturación</span>
+                                            </div>
+                                            <div className="col-span-3 flex justify-start md:justify-end">
+                                                <button className="flex items-center gap-2 rounded-lg text-[10px] font-black uppercase tracking-widest text-secondary hover:underline">
+                                                    <span className="material-symbols-outlined text-[18px]">download</span> Descargar
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}                        
+                        </div> {/* <-- CIERRE DEL WRAPPER DE CONTENIDO */}
+
+                        {/* FOOTER - DENTRO DEL CONTENEDOR CON SCROLL */}
+                        
+
                     </div>
                 </main>
 
@@ -402,36 +809,28 @@ export default function Dashboard({ auth, turnos = [] }) {
                         {renderProfileMenu('right-8')}
                     </div>
 
-                    {/* ÁREA DE RENDERIZADO CONTEXTUAL (Sidebar Dinámico) */}
                     <div className="flex-1 overflow-y-auto bg-[#F8F9FA]">
-                        
-                        {/* Contexto 1: INICIO */}
                         {tab === 'inicio' && (
                             <div className="p-8 animate-fade-in">
                                 <h2 className="mb-8 px-2 text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Novedades</h2>
                                 <NewsCards />
                             </div>
                         )}
-
-                        {/* Contexto 2: TURNOS */}
                         {tab === 'turnos' && (
                             <div className="p-8 animate-fade-in">
                                 <h2 className="mb-6 px-2 text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Calendario</h2>
                                 <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm text-center flex flex-col items-center justify-center min-h-[250px]">
                                     <span className="material-symbols-outlined text-blue-100 text-6xl mb-4">calendar_month</span>
                                     <p className="text-sm font-black text-primary uppercase">Navegador de Fechas</p>
+                                    <p className="text-xs font-semibold text-gray-400 mt-1">Próximamente</p>
                                 </div>
                             </div>
                         )}
-
-                        {/* Contextos restantes: Limpios y sin relleno innecesario */}
                         {(tab === 'salud' || tab === 'cartilla' || tab === 'documentos') && (
                             <div className="flex h-full items-center justify-center p-8 opacity-[0.03]">
-                                {/* Marca de agua súper sutil. No molesta, no es relleno, solo da textura al fondo. */}
                                 <span className="material-symbols-outlined text-[120px] text-primary">local_hospital</span>
                             </div>
                         )}
-                        
                     </div>
                 </aside>
             </div>
@@ -452,5 +851,62 @@ function NewsCards() {
                 <p className="text-xs font-medium leading-relaxed text-gray-400">Se incorpora equipo en cardiología infantil.</p>
             </article>
         </div>
+    );
+}
+
+function Footer() {
+    return (
+        <footer className="mt-auto shrink-0 border-t border-white/10 bg-primary px-8 py-12 text-white">
+            <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 md:grid-cols-4 lg:gap-8">
+                <div className="md:col-span-2">
+                    <h3 className="text-xl font-normal tracking-wide">Hospital Universitario</h3>
+                    <p className="mb-6 font-black uppercase tracking-widest text-secondary">Salud UNCUYO</p>
+                    <div className="space-y-1.5 text-[13px] text-blue-100">
+                        <p>Paso de los Andes 3051, (M5502BLI)</p>
+                        <p>Mendoza, Argentina</p>
+                        <p>Informes: 5644011</p>
+                        <p>Número para atención telefónica: 261-5644000.</p>
+                        <p>Informes y conmutador general del HU</p>
+                        <p>De lunes a viernes de 8 a 20 horas.</p>
+                        <p>Correo electrónico: <a href="mailto:info@hospital.uncu.edu.ar" className="hover:text-white hover:underline">info@hospital.uncu.edu.ar</a></p>
+                        <p>Turnos por WhatsApp: <span className="font-bold text-white">261 205 3408</span></p>
+                    </div>
+                    <div className="mt-8 flex flex-col gap-4">
+                        <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-blue-100">
+                            <a href="#" className="flex items-center gap-1.5 transition-colors hover:text-white">
+                                <span className="material-symbols-outlined text-[18px]">public</span> Facebook
+                            </a>
+                            <a href="#" className="flex items-center gap-1.5 transition-colors hover:text-white">
+                                <span className="material-symbols-outlined text-[18px]">public</span> Twitter
+                            </a>
+                            <a href="#" className="flex items-center gap-1.5 transition-colors hover:text-white">
+                                <span className="material-symbols-outlined text-[18px]">smart_display</span> Youtube
+                            </a>
+                            <a href="#" className="flex items-center gap-1.5 transition-colors hover:text-white">
+                                <span className="material-symbols-outlined text-[18px]">work</span> LinkedIn
+                            </a>
+                            <a href="#" className="flex items-center gap-1.5 transition-colors hover:text-white">
+                                <span className="material-symbols-outlined text-[18px]">photo_camera</span> Instagram
+                            </a>
+                        </div>
+                        <a href="#" className="flex w-fit items-center gap-2 rounded-lg bg-white/5 px-4 py-2 text-xs font-semibold transition-colors hover:bg-white/10">
+                            <span className="material-symbols-outlined text-[18px]">mail</span> Suscripción a boletín
+                        </a>
+                    </div>
+                </div>
+                <div className="flex flex-col gap-3 text-[13px] text-blue-100">
+                    <a href="#" className="transition-colors hover:text-white hover:underline">Cursos</a>
+                    <a href="#" className="transition-colors hover:text-white hover:underline">Contacto</a>
+                </div>
+                <div className="flex flex-col gap-3 text-[13px] text-blue-100">
+                    <a href="#" className="transition-colors hover:text-white hover:underline">Preguntas frecuentes</a>
+                    <a href="#" className="transition-colors hover:text-white hover:underline">Trámites</a>
+                </div>
+                <div className="flex flex-col gap-3 text-[13px] text-blue-100">
+                    <a href="#" className="transition-colors hover:text-white hover:underline">Mapa del sitio</a>
+                    <a href="#" className="transition-colors hover:text-white hover:underline">Defensoría Estudiantil</a>
+                </div>
+            </div>
+        </footer>
     );
 }
