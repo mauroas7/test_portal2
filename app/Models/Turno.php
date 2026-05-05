@@ -9,11 +9,31 @@ class Turno extends Model
 {
     use HasFactory;
 
-    protected $guarded = []; // Permite guardar datos masivamente
+    protected $fillable = [
+        'user_id', 
+        'especialidad_id', 
+        'medico_id', 
+        'fecha_hora', 
+        'consultorio', 
+        'estado'
+    ];
 
-    // Relación: Un turno pertenece a un usuario (paciente)
-    public function user()
+    protected $casts = [
+        'fecha_hora' => 'datetime',
+    ];
+
+    public function paciente()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function especialidad()
+    {
+        return $this->belongsTo(Especialidad::class);
+    }
+
+    public function medico()
+    {
+        return $this->belongsTo(Medico::class);
     }
 }

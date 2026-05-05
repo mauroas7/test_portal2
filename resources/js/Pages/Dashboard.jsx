@@ -1,11 +1,14 @@
 import { useState, useMemo } from 'react';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, router} from '@inertiajs/react';
 
-export default function Dashboard({ auth, turnos = [] }) {
+// 1. Recibimos especialidades_db y medicos_db desde el Controlador de Laravel
+export default function Dashboard({ auth, turnos = [], especialidades_db = [], medicos_db = [] }) {
     const [tab, setTab] = useState('inicio');
     const [subTabTurnos, setSubTabTurnos] = useState('proximos'); 
     const [subTabSalud, setSubTabSalud] = useState('resultados');
     const [subTabCartilla, setSubTabCartilla] = useState('especialidades');
+    const [cartillaEspecialidadFilter, setCartillaEspecialidadFilter] = useState('');
+    const [globalSearch, setGlobalSearch] = useState('');
     
     const [mobileMenu, setMobileMenu] = useState(false);
     const [profileOpen, setProfileOpen] = useState(false);
@@ -66,9 +69,10 @@ export default function Dashboard({ auth, turnos = [] }) {
     const renderProfileMenu = (align = 'right-0') => (
         profileOpen && (
             <div className={`absolute top-14 ${align} z-50 w-56 rounded-2xl border border-gray-100 bg-white py-2 shadow-2xl`}>
-                <Link href={route('profile.edit')} className="flex items-center gap-3 px-5 py-3 text-sm font-bold text-brandText transition-colors hover:bg-[#F8F9FA]">
+                {/* Cambiamos el <Link> por una etiqueta <a> común y le sacamos la ruta rota temporalmente */}
+                <a href="#" className="flex items-center gap-3 px-5 py-3 text-sm font-bold text-brandText transition-colors hover:bg-[#F8F9FA]">
                     <span className="material-symbols-outlined text-secondary">person</span> Mi Perfil
-                </Link>
+                </a>
                 <hr className="my-2 border-gray-50" />
                 <form onSubmit={handleLogout}>
                     <button type="submit" className="flex w-full items-center gap-3 px-5 py-3 text-sm font-black uppercase tracking-wider text-red-500 transition-colors hover:bg-red-50">
@@ -79,44 +83,45 @@ export default function Dashboard({ auth, turnos = [] }) {
         )
     );
 
-    // Estados para el Modal de Nuevo Turno
+    // Estados para el Modal de Nuevo Turno (Ahora con IDs)
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [modalStep, setModalStep] = useState(1); // Pasos: 1, 2, 3, 4
+    const [modalStep, setModalStep] = useState(1);
     const [nuevoTurno, setNuevoTurno] = useState({
+        especialidad_id: null,
         especialidad: null,
+        medico_id: null,
         medico: null,
         fecha: null,
         hora: null
     });
 
-    // Funciones de navegación del modal
     const closeModal = () => {
         setIsModalOpen(false);
         setTimeout(() => {
             setModalStep(1);
-            setNuevoTurno({ especialidad: null, medico: null, fecha: null, hora: null });
-        }, 300); // Resetea después de la animación de cierre
+            setNuevoTurno({ especialidad_id: null, especialidad: null, medico_id: null, medico: null, fecha: null, hora: null });
+        }, 300);
     };
 
     return (
         <div className="min-h-screen bg-primary p-3 font-sans antialiased lg:p-4">
             <Head title="Home | Hospital Universitario" />
 
-            {/* Contenedor principal de la APP */}
-            <div className="mx-auto flex min-h-[calc(100vh-1.5rem)] w-full max-w-[1900px] overflow-hidden rounded-[2rem] bg-white shadow-2xl lg:min-h-[calc(100vh-2rem)]">
+            <div className="mx-auto flex flex-col min-h-[calc(100vh-1.5rem)] w-full max-w-[1900px] overflow-hidden rounded-[2rem] bg-white shadow-2xl lg:min-h-[calc(100vh-2rem)]">
                 
-                {/* --- SIDEBAR IZQUIERDO --- */}
-                <aside className="hidden w-72 shrink-0 flex-col border-r border-gray-100 bg-[#F8F9FA] p-8 lg:flex">
-                    <div className="mb-12 flex justify-center px-2">
-                        <img src="/img/Logo HU Uso Diario.svg" alt="Hospital Universitario" className="h-auto w-44" />
-                    </div>
-                    <div className="flex-1 overflow-y-auto pr-2">
+                <div className="flex flex-1 w-full min-h-[calc(100vh-1.5rem)] lg:min-h-[calc(100vh-2rem)]">
+                    {/* SIDEBAR IZQUIERDO */}
+                    <aside className="hidden w-72 shrink-0 flex-col border-r border-gray-100 bg-[#F8F9FA] p-8 lg:flex">
+                        <div className="mb-12 flex justify-center px-2">
+                            <img src="/img/Logo HU Uso Diario.svg" alt="Hospital Universitario" className="h-auto w-44" />
+                        </div>
+                        <div className="flex-1 pr-2">
                         <p className="mb-6 px-4 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Menú Principal</p>
                         {renderNavigation()}
                     </div>
                 </aside>
 
-                {/* --- CONTENIDO PRINCIPAL --- */}
+                {/* CONTENIDO PRINCIPAL */}
                 <main className="flex min-w-0 flex-1 flex-col bg-white">
                     
                     {/* Header */}
@@ -140,21 +145,61 @@ export default function Dashboard({ auth, turnos = [] }) {
                             </div>
                         )}
 
-                        <div className="relative w-full max-w-2xl">
+                        <div className="relative w-full max-w-2xl z-50">
                             <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">search</span>
-                            <input type="text" placeholder="Buscar médico, especialidad, estudios..." className="w-full rounded-2xl border-none bg-[#F8F9FA] py-3.5 pl-12 pr-4 text-sm font-semibold text-primary transition-all placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-secondary/20" />
+                            <input 
+                                type="text" 
+                                value={globalSearch}
+                                onChange={(e) => setGlobalSearch(e.target.value)}
+                                placeholder="Buscar médico, especialidad, estudios..." 
+                                className="w-full rounded-2xl border-none bg-[#F8F9FA] py-3.5 pl-12 pr-4 text-sm font-semibold text-primary transition-all placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-secondary/20" 
+                            />
+                            {globalSearch.length > 1 && (
+                                <div className="absolute top-full left-0 w-full mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden max-h-[400px] overflow-y-auto">
+                                    {/* Resultados Especialidades */}
+                                    {especialidades_db.filter(e => e.nombre.toLowerCase().includes(globalSearch.toLowerCase())).map(esp => (
+                                        <button key={`esp-${esp.id}`} onClick={() => {
+                                            setCartillaEspecialidadFilter(esp.id.toString());
+                                            setTab('cartilla');
+                                            setSubTabCartilla('profesionales');
+                                            setGlobalSearch('');
+                                        }} className="w-full text-left px-5 py-3 hover:bg-gray-50 flex items-center gap-3 border-b border-gray-50 last:border-0">
+                                            <span className="material-symbols-outlined text-secondary">medical_services</span>
+                                            <div>
+                                                <p className="text-sm font-bold text-primary">{esp.nombre}</p>
+                                                <p className="text-[10px] uppercase tracking-widest text-gray-400">Especialidad</p>
+                                            </div>
+                                        </button>
+                                    ))}
+                                    {/* Resultados Médicos */}
+                                    {medicos_db.filter(m => (m.nombre + ' ' + m.apellido).toLowerCase().includes(globalSearch.toLowerCase())).map(med => (
+                                        <button key={`med-${med.id}`} onClick={() => {
+                                            setCartillaEspecialidadFilter(med.especialidad_id.toString());
+                                            setTab('cartilla');
+                                            setSubTabCartilla('profesionales');
+                                            setGlobalSearch('');
+                                        }} className="w-full text-left px-5 py-3 hover:bg-gray-50 flex items-center gap-3 border-b border-gray-50 last:border-0">
+                                            <span className="material-symbols-outlined text-secondary">person</span>
+                                            <div>
+                                                <p className="text-sm font-bold text-primary">Dr/a. {med.apellido}, {med.nombre}</p>
+                                                <p className="text-[10px] uppercase tracking-widest text-gray-400">Médico</p>
+                                            </div>
+                                        </button>
+                                    ))}
+                                    {especialidades_db.filter(e => e.nombre.toLowerCase().includes(globalSearch.toLowerCase())).length === 0 && medicos_db.filter(m => (m.nombre + ' ' + m.apellido).toLowerCase().includes(globalSearch.toLowerCase())).length === 0 && (
+                                        <div className="px-5 py-6 text-center text-sm font-semibold text-gray-500">
+                                            No se encontraron resultados para "{globalSearch}"
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </header>
 
-                    {/* CONTENEDOR CON SCROLL INTERNO */}
-                    <div className="flex flex-1 flex-col overflow-y-auto bg-white relative">
-                        
-                        {/* Wrapper para dar Padding al contenido y empujar el Footer hacia abajo */}
+                    <div className="flex flex-1 flex-col bg-white relative">
                         <div className="flex-1 p-5 lg:p-12">
                             
-                            {/* =========================================
-                                SECCIÓN 1: INICIO
-                            ========================================= */}
+                            {/* --- SECCIÓN 1: INICIO --- */}
                             {tab === 'inicio' && (
                                 <div className="mx-auto max-w-[1400px]">
                                     <div className="mb-8 flex flex-col items-start justify-between gap-6 md:flex-row md:items-end lg:mb-12">
@@ -162,7 +207,6 @@ export default function Dashboard({ auth, turnos = [] }) {
                                             <h1 className="mb-2 text-3xl font-black uppercase tracking-tight text-primary lg:text-4xl">Panel de Control</h1>
                                             <p className="font-semibold text-brandText">Hola {userName}, este es el resumen de tu salud hoy.</p>
                                         </div>
-                                        
                                         <button onClick={() => setIsModalOpen(true)} className="group flex w-full md:w-auto shrink-0 items-center justify-center gap-3 rounded-2xl bg-secondary px-8 py-4 text-[12px] font-black uppercase tracking-widest text-white shadow-xl shadow-secondary/30 transition-all hover:scale-105 hover:bg-[#B38F5A]">
                                             <span className="material-symbols-outlined text-[24px] transition-transform group-hover:rotate-12">calendar_add_on</span>
                                             Solicitar Nuevo Turno
@@ -233,6 +277,7 @@ export default function Dashboard({ auth, turnos = [] }) {
                                                     <button onClick={() => setTab('salud')} className="text-[9px] font-black uppercase tracking-widest text-secondary hover:underline">Ver todos</button>
                                                 </div>
                                                 <div className="space-y-4 flex-1">
+                                                    {/* Resultados estáticos como placeholder visual temporal */}
                                                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rounded-2xl border border-gray-50 bg-[#F8F9FA] p-4 transition-colors hover:bg-gray-50 cursor-pointer">
                                                         <div className="flex items-center gap-4 min-w-0">
                                                             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
@@ -264,9 +309,7 @@ export default function Dashboard({ auth, turnos = [] }) {
                                 </div>
                             )}
 
-                            {/* =========================================
-                                SECCIÓN 2: MIS TURNOS
-                            ========================================= */}
+                            {/* --- SECCIÓN 2: MIS TURNOS --- */}
                             {tab === 'turnos' && (
                                 <div className="mx-auto max-w-6xl">
                                     <div className="mb-8 flex flex-col md:flex-row items-start md:items-end justify-between gap-4 border-b border-gray-100 pb-6">
@@ -289,7 +332,6 @@ export default function Dashboard({ auth, turnos = [] }) {
                                         </button>
                                     </div>
                                     
-                                    {/* VISTA 1: PRÓXIMOS TURNOS */}
                                     {subTabTurnos === 'proximos' && (
                                         <div className="overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-sm animate-fade-in">
                                             <div className="hidden grid-cols-5 border-b border-gray-100 bg-[#F8F9FA] px-10 py-5 lg:grid">
@@ -340,7 +382,6 @@ export default function Dashboard({ auth, turnos = [] }) {
                                         </div>
                                     )}
 
-                                    {/* VISTA 2: HISTORIAL DE VISITAS */}
                                     {subTabTurnos === 'historial' && (
                                         <div className="overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-sm animate-fade-in">
                                             <div className="hidden grid-cols-4 border-b border-gray-100 bg-[#F8F9FA] px-10 py-5 lg:grid">
@@ -384,154 +425,139 @@ export default function Dashboard({ auth, turnos = [] }) {
                                 </div>
                             )}
 
-                            {/* =========================================
-                            SECCIÓN 3: MI SALUD
-                            ========================================= */}
+                            {/* --- SECCIÓN 3: MI SALUD --- */}
                             {tab === 'salud' && (
                                 <div className="mx-auto max-w-6xl">
-                                    
-                                    {/* HEADER LIMPIO (Sin el botón duplicado) */}
                                     <div className="mb-8 flex flex-col md:flex-row items-start md:items-end justify-between gap-4 border-b border-gray-100 pb-6">
                                         <div>
                                             <h1 className="mb-2 text-3xl font-black tracking-tight text-primary lg:text-4xl uppercase">Mi Salud</h1>
                                             <p className="font-semibold text-brandText">Su historial clínico, resultados de estudios y recetas médicas.</p>
                                         </div>
-                                        {/* El botón de 'Subir Estudio' fue eliminado para centralizar la subida en 'Documentos' */}
                                     </div>
 
-                                {/* PÍLDORAS DE NAVEGACIÓN (Sub-Tabs) */}
-                                <div className="mb-8 flex p-1 bg-[#F8F9FA] w-fit rounded-xl border border-gray-100 overflow-x-auto max-w-full">
-                                    <button onClick={() => setSubTabSalud('resultados')} className={`whitespace-nowrap px-6 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${subTabSalud === 'resultados' ? 'bg-white text-primary shadow-sm' : 'text-gray-400 hover:text-brandText'}`}>
-                                        Resultados y Estudios
-                                    </button>
-                                    <button onClick={() => setSubTabSalud('recetas')} className={`whitespace-nowrap px-6 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${subTabSalud === 'recetas' ? 'bg-white text-primary shadow-sm' : 'text-gray-400 hover:text-brandText'}`}>
-                                        Mis Recetas
-                                    </button>
-                                    <button onClick={() => setSubTabSalud('perfil')} className={`whitespace-nowrap px-6 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${subTabSalud === 'perfil' ? 'bg-white text-primary shadow-sm' : 'text-gray-400 hover:text-brandText'}`}>
-                                        Perfil Clínico
-                                    </button>
-                                </div>
-                                
-                                {/* VISTA 1: RESULTADOS Y ESTUDIOS */}
-                                {subTabSalud === 'resultados' && (
-                                    <div className="overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-sm animate-fade-in">
-                                        <div className="hidden grid-cols-5 border-b border-gray-100 bg-[#F8F9FA] px-10 py-5 lg:grid">
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-brandText col-span-2">Estudio Requerido</span>
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-brandText">Fecha</span>
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-brandText">Estado</span>
-                                            <span className="text-center text-[10px] font-black uppercase tracking-widest text-brandText">Descarga</span>
-                                        </div>
+                                    <div className="mb-8 flex p-1 bg-[#F8F9FA] w-fit rounded-xl border border-gray-100 overflow-x-auto max-w-full">
+                                        <button onClick={() => setSubTabSalud('resultados')} className={`whitespace-nowrap px-6 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${subTabSalud === 'resultados' ? 'bg-white text-primary shadow-sm' : 'text-gray-400 hover:text-brandText'}`}>
+                                            Resultados y Estudios
+                                        </button>
+                                        <button onClick={() => setSubTabSalud('recetas')} className={`whitespace-nowrap px-6 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${subTabSalud === 'recetas' ? 'bg-white text-primary shadow-sm' : 'text-gray-400 hover:text-brandText'}`}>
+                                            Mis Recetas
+                                        </button>
+                                        <button onClick={() => setSubTabSalud('perfil')} className={`whitespace-nowrap px-6 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${subTabSalud === 'perfil' ? 'bg-white text-primary shadow-sm' : 'text-gray-400 hover:text-brandText'}`}>
+                                            Perfil Clínico
+                                        </button>
+                                    </div>
+                                    
+                                    {subTabSalud === 'resultados' && (
+                                        <div className="overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-sm animate-fade-in">
+                                            <div className="hidden grid-cols-5 border-b border-gray-100 bg-[#F8F9FA] px-10 py-5 lg:grid">
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-brandText col-span-2">Estudio Requerido</span>
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-brandText">Fecha</span>
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-brandText">Estado</span>
+                                                <span className="text-center text-[10px] font-black uppercase tracking-widest text-brandText">Descarga</span>
+                                            </div>
 
-                                        <div className="flex flex-col">
-                                            {/* Item: Estudio Terminado */}
-                                            <div className="grid gap-4 border-b border-gray-50 px-6 py-6 transition-colors hover:bg-[#F8F9FA] lg:grid-cols-5 lg:items-center lg:px-10">
-                                                <div className="lg:col-span-2 flex items-center gap-4 min-w-0">
-                                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-50 text-primary">
-                                                        <span className="material-symbols-outlined text-[24px]">radiology</span>
+                                            <div className="flex flex-col">
+                                                <div className="grid gap-4 border-b border-gray-50 px-6 py-6 transition-colors hover:bg-[#F8F9FA] lg:grid-cols-5 lg:items-center lg:px-10">
+                                                    <div className="lg:col-span-2 flex items-center gap-4 min-w-0">
+                                                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-50 text-primary">
+                                                            <span className="material-symbols-outlined text-[24px]">radiology</span>
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <p className="text-sm font-black uppercase text-primary truncate">Ecografía Abdominal Completa</p>
+                                                            <p className="mt-0.5 text-xs font-semibold text-gray-500 truncate">Ordenado por: Dr. Favaloro</p>
+                                                        </div>
                                                     </div>
-                                                    <div className="min-w-0">
-                                                        <p className="text-sm font-black uppercase text-primary truncate">Ecografía Abdominal Completa</p>
-                                                        <p className="mt-0.5 text-xs font-semibold text-gray-500 truncate">Ordenado por: Dr. Favaloro</p>
+                                                    <div>
+                                                        <p className="text-sm font-bold text-brandText">15 de Abril, 2026</p>
+                                                    </div>
+                                                    <div>
+                                                        <span className="rounded-full bg-green-100 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-green-700">Disponible</span>
+                                                    </div>
+                                                    <div className="flex justify-start lg:justify-center mt-2 lg:mt-0">
+                                                        <button className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-white transition-colors hover:bg-secondary">
+                                                            <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span> PDF
+                                                        </button>
                                                     </div>
                                                 </div>
-                                                <div>
-                                                    <p className="text-sm font-bold text-brandText">15 de Abril, 2026</p>
+
+                                                <div className="grid gap-4 border-b border-gray-50 px-6 py-6 transition-colors hover:bg-[#F8F9FA] lg:grid-cols-5 lg:items-center lg:px-10 opacity-70">
+                                                    <div className="lg:col-span-2 flex items-center gap-4 min-w-0">
+                                                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-600">
+                                                            <span className="material-symbols-outlined text-[24px]">bloodtype</span>
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <p className="text-sm font-black uppercase text-primary truncate">Análisis de Sangre Completo</p>
+                                                            <p className="mt-0.5 text-xs font-semibold text-gray-500 truncate">Ordenado por: Dra. Martinez</p>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-bold text-brandText">Hoy</p>
+                                                    </div>
+                                                    <div>
+                                                        <span className="rounded-full bg-amber-100 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-amber-700">Analizando</span>
+                                                    </div>
+                                                    <div className="flex justify-start lg:justify-center mt-2 lg:mt-0">
+                                                        <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Demora: 48hs</span>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <span className="rounded-full bg-green-100 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-green-700">Disponible</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {subTabSalud === 'recetas' && (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
+                                            <div className="relative overflow-hidden rounded-[2rem] border border-gray-100 bg-white p-8 shadow-sm transition-shadow hover:shadow-md">
+                                                <div className="mb-6 flex items-start justify-between">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-primary">
+                                                            <span className="material-symbols-outlined text-[28px]">prescriptions</span>
+                                                        </div>
+                                                        <div>
+                                                            <h3 className="text-lg font-black uppercase tracking-tight text-primary">Losartán 50mg</h3>
+                                                            <span className="rounded bg-green-100 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-green-700">Tratamiento Crónico</span>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div className="flex justify-start lg:justify-center mt-2 lg:mt-0">
-                                                    <button className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-white transition-colors hover:bg-secondary">
-                                                        <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span> PDF
+                                                <div className="mb-8 space-y-3 rounded-2xl bg-[#F8F9FA] p-5">
+                                                    <div className="flex justify-between border-b border-gray-100 pb-2">
+                                                        <span className="text-xs font-semibold text-gray-400">Indicación</span>
+                                                        <span className="text-xs font-black text-primary uppercase">1 comprimido cada 12hs</span>
+                                                    </div>
+                                                    <div className="flex justify-between border-b border-gray-100 pb-2">
+                                                        <span className="text-xs font-semibold text-gray-400">Profesional</span>
+                                                        <span className="text-xs font-black text-primary uppercase">Dr. Favaloro</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span className="text-xs font-semibold text-gray-400">Vencimiento Receta</span>
+                                                        <span className="text-xs font-black text-red-500 uppercase">En 5 días</span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex gap-3">
+                                                    <button className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white transition-colors hover:bg-secondary">
+                                                        <span className="material-symbols-outlined text-[16px]">qr_code_2</span> Ver QR
+                                                    </button>
+                                                    <button className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-[10px] font-black uppercase tracking-widest text-primary transition-colors hover:bg-gray-50">
+                                                        <span className="material-symbols-outlined text-[16px]">autorenew</span> Renovar
                                                     </button>
                                                 </div>
                                             </div>
-
-                                            {/* Item: Estudio en Proceso */}
-                                            <div className="grid gap-4 border-b border-gray-50 px-6 py-6 transition-colors hover:bg-[#F8F9FA] lg:grid-cols-5 lg:items-center lg:px-10 opacity-70">
-                                                <div className="lg:col-span-2 flex items-center gap-4 min-w-0">
-                                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-600">
-                                                        <span className="material-symbols-outlined text-[24px]">bloodtype</span>
-                                                    </div>
-                                                    <div className="min-w-0">
-                                                        <p className="text-sm font-black uppercase text-primary truncate">Análisis de Sangre Completo</p>
-                                                        <p className="mt-0.5 text-xs font-semibold text-gray-500 truncate">Ordenado por: Dra. Martinez</p>
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm font-bold text-brandText">Hoy</p>
-                                                </div>
-                                                <div>
-                                                    <span className="rounded-full bg-amber-100 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-amber-700">Analizando</span>
-                                                </div>
-                                                <div className="flex justify-start lg:justify-center mt-2 lg:mt-0">
-                                                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Demora: 48hs</span>
-                                                </div>
-                                            </div>
                                         </div>
-                                    </div>
-                                )}
+                                    )}
 
-                                {/* VISTA 2: RECETAS */}
-                                {subTabSalud === 'recetas' && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
-                                        {/* Tarjeta de Receta */}
-                                        <div className="relative overflow-hidden rounded-[2rem] border border-gray-100 bg-white p-8 shadow-sm transition-shadow hover:shadow-md">
-                                            <div className="mb-6 flex items-start justify-between">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-primary">
-                                                        <span className="material-symbols-outlined text-[28px]">prescriptions</span>
-                                                    </div>
-                                                    <div>
-                                                        <h3 className="text-lg font-black uppercase tracking-tight text-primary">Losartán 50mg</h3>
-                                                        <span className="rounded bg-green-100 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-green-700">Tratamiento Crónico</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="mb-8 space-y-3 rounded-2xl bg-[#F8F9FA] p-5">
-                                                <div className="flex justify-between border-b border-gray-100 pb-2">
-                                                    <span className="text-xs font-semibold text-gray-400">Indicación</span>
-                                                    <span className="text-xs font-black text-primary uppercase">1 comprimido cada 12hs</span>
-                                                </div>
-                                                <div className="flex justify-between border-b border-gray-100 pb-2">
-                                                    <span className="text-xs font-semibold text-gray-400">Profesional</span>
-                                                    <span className="text-xs font-black text-primary uppercase">Dr. Favaloro</span>
-                                                </div>
-                                                <div className="flex justify-between">
-                                                    <span className="text-xs font-semibold text-gray-400">Vencimiento Receta</span>
-                                                    <span className="text-xs font-black text-red-500 uppercase">En 5 días</span>
-                                                </div>
-                                            </div>
-                                            <div className="flex gap-3">
-                                                <button className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white transition-colors hover:bg-secondary">
-                                                    <span className="material-symbols-outlined text-[16px]">qr_code_2</span> Ver QR en Farmacia
-                                                </button>
-                                                <button className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-[10px] font-black uppercase tracking-widest text-primary transition-colors hover:bg-gray-50">
-                                                    <span className="material-symbols-outlined text-[16px]">autorenew</span> Renovar
-                                                </button>
-                                            </div>
+                                    {subTabSalud === 'perfil' && (
+                                        <div className="flex min-h-[300px] flex-col items-center justify-center rounded-[2rem] border border-gray-100 bg-white p-8 text-center shadow-sm animate-fade-in">
+                                            <span className="material-symbols-outlined text-5xl text-gray-300 mb-4">medical_information</span>
+                                            <h3 className="mb-2 text-xl font-black tracking-tight text-primary uppercase">Perfil Clínico </h3>
+                                            <p className="text-sm font-semibold text-gray-400">Visualizar antecedentes aquí.</p>
                                         </div>
-                                    </div>
-                                )}
+                                    )}
+                                </div>
+                            )}
 
-                                {/* VISTA 3: PERFIL CLÍNICO */}
-                                {subTabSalud === 'perfil' && (
-                                    <div className="flex min-h-[300px] flex-col items-center justify-center rounded-[2rem] border border-gray-100 bg-white p-8 text-center shadow-sm animate-fade-in">
-                                        <span className="material-symbols-outlined text-5xl text-gray-300 mb-4">medical_information</span>
-                                        <h3 className="mb-2 text-xl font-black tracking-tight text-primary uppercase">Perfil Clínico </h3>
-                                        <p className="text-sm font-semibold text-gray-400">Visualizar antecedentes aquí.</p>
-                                    </div>
-                                )}
-                            </div>
-                        )}            
-
-                            {/* =========================================
-                            SECCIÓN 4: CARTILLA MÉDICA
-                            ========================================= */}
+                            {/* --- SECCIÓN 4: CARTILLA MÉDICA (AHORA CON DATOS DINÁMICOS) --- */}
                             {tab === 'cartilla' && (
                             <div className="mx-auto max-w-6xl">
                                 
-                                {/* HEADER LIMPIO (Sin buscador central) */}
                                 <div className="mb-8 flex flex-col md:flex-row items-start md:items-end justify-between gap-4 border-b border-gray-100 pb-6">
                                     <div>
                                         <h1 className="mb-2 text-3xl font-black tracking-tight text-primary lg:text-4xl uppercase">Cartilla Médica</h1>
@@ -539,7 +565,6 @@ export default function Dashboard({ auth, turnos = [] }) {
                                     </div>
                                 </div>
 
-                                {/* PÍLDORAS DE NAVEGACIÓN (Sub-Tabs) */}
                                 <div className="mb-8 flex p-1 bg-[#F8F9FA] w-fit rounded-xl border border-gray-100">
                                     <button 
                                         onClick={() => setSubTabCartilla('especialidades')} 
@@ -555,264 +580,191 @@ export default function Dashboard({ auth, turnos = [] }) {
                                     </button>
                                 </div>
 
-                                {/* VISTA 1: ESPECIALIDADES (Catálogo visual) */}
+                                {/* VISTA 1: ESPECIALIDADES DINÁMICAS */}
                                 {subTabCartilla === 'especialidades' && (
-                                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 lg:grid-cols-3 gap-6 animate-fade-in">
-                                        
-                                        <div className="group flex cursor-pointer flex-col justify-between overflow-hidden rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:border-secondary/30 hover:shadow-lg">
-                                            <div className="mb-4 flex items-start justify-between">
-                                                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-500 transition-transform group-hover:scale-110">
-                                                    <span className="material-symbols-outlined text-[32px]">cardiology</span>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 animate-fade-in">
+                                        {especialidades_db.map(esp => (
+                                            <div key={esp.id} className="group flex cursor-pointer flex-col justify-between overflow-hidden rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:border-secondary/30 hover:shadow-lg">
+                                                <div className="mb-4 flex items-start justify-between">
+                                                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-primary transition-transform group-hover:scale-110">
+                                                        <span className="material-symbols-outlined text-[32px]">medical_services</span>
+                                                    </div>
                                                 </div>
-                                                <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-gray-500">12 Profesionales</span>
-                                            </div>
-                                            <div>
-                                                <h3 className="mb-1 text-lg font-black uppercase tracking-tight text-primary transition-colors group-hover:text-secondary">Cardiología</h3>
-                                                <p className="text-xs font-medium text-gray-400">Adultos e Infantil. Estudios complementarios.</p>
-                                            </div>
-                                            <div className="mt-6 flex items-center justify-between border-t border-gray-50 pt-4 opacity-0 transition-opacity group-hover:opacity-100">
-                                                <span className="text-[10px] font-black uppercase tracking-widest text-secondary">Ver plantel</span>
-                                                <span className="material-symbols-outlined text-secondary">arrow_forward</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="group flex cursor-pointer flex-col justify-between overflow-hidden rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:border-secondary/30 hover:shadow-lg">
-                                            <div className="mb-4 flex items-start justify-between">
-                                                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-primary transition-transform group-hover:scale-110">
-                                                    <span className="material-symbols-outlined text-[32px]">child_care</span>
+                                                <div>
+                                                    <h3 className="mb-1 text-lg font-black uppercase tracking-tight text-primary transition-colors group-hover:text-secondary">{esp.nombre}</h3>
+                                                    <p className="text-xs font-medium text-gray-400">{esp.descripcion}</p>
                                                 </div>
-                                                <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-gray-500">8 Profesionales</span>
-                                            </div>
-                                            <div>
-                                                <h3 className="mb-1 text-lg font-black uppercase tracking-tight text-primary transition-colors group-hover:text-secondary">Pediatría</h3>
-                                                <p className="text-xs font-medium text-gray-400">Atención integral del niño y adolescente.</p>
-                                            </div>
-                                            <div className="mt-6 flex items-center justify-between border-t border-gray-50 pt-4 opacity-0 transition-opacity group-hover:opacity-100">
-                                                <span className="text-[10px] font-black uppercase tracking-widest text-secondary">Ver plantel</span>
-                                                <span className="material-symbols-outlined text-secondary">arrow_forward</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="group flex cursor-pointer flex-col justify-between overflow-hidden rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:border-secondary/30 hover:shadow-lg">
-                                            <div className="mb-4 flex items-start justify-between">
-                                                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 transition-transform group-hover:scale-110">
-                                                    <span className="material-symbols-outlined text-[32px]">neurology</span>
+                                                <div 
+                                                    className="mt-6 flex items-center justify-between border-t border-gray-50 pt-4 opacity-0 transition-opacity group-hover:opacity-100"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setCartillaEspecialidadFilter(esp.id.toString());
+                                                        setSubTabCartilla('profesionales');
+                                                    }}
+                                                >
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-secondary">Ver plantel</span>
+                                                    <span className="material-symbols-outlined text-secondary">arrow_forward</span>
                                                 </div>
-                                                <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-gray-500">5 Profesionales</span>
                                             </div>
-                                            <div>
-                                                <h3 className="mb-1 text-lg font-black uppercase tracking-tight text-primary transition-colors group-hover:text-secondary">Neurología</h3>
-                                                <p className="text-xs font-medium text-gray-400">Diagnóstico y tratamiento de patologías neurológicas.</p>
-                                            </div>
-                                            <div className="mt-6 flex items-center justify-between border-t border-gray-50 pt-4 opacity-0 transition-opacity group-hover:opacity-100">
-                                                <span className="text-[10px] font-black uppercase tracking-widest text-secondary">Ver plantel</span>
-                                                <span className="material-symbols-outlined text-secondary">arrow_forward</span>
-                                            </div>
-                                        </div>
+                                        ))}
                                     </div>
                                 )}
 
-                                {/* VISTA 2: PROFESIONALES (Con barra de filtros) */}
+                                {/* VISTA 2: PROFESIONALES DINÁMICOS */}
                                 {subTabCartilla === 'profesionales' && (
                                     <div className="animate-fade-in">
-                                        
-                                        {/* BARRA DE FILTROS LÓGICA */}
                                         <div className="mb-8 flex flex-col md:flex-row gap-4 rounded-2xl bg-[#F8F9FA] border border-gray-100 p-4">
                                             <div className="flex-1">
                                                 <label className="mb-1.5 ml-1 block text-[9px] font-black uppercase tracking-widest text-gray-400">Especialidad</label>
-                                                <select className="w-full rounded-xl border-none bg-white py-3 pl-4 pr-10 text-sm font-bold text-primary shadow-sm outline-none focus:ring-2 focus:ring-secondary/20 appearance-none cursor-pointer">
+                                                <select 
+                                                    value={cartillaEspecialidadFilter}
+                                                    onChange={(e) => setCartillaEspecialidadFilter(e.target.value)}
+                                                    className="w-full rounded-xl border-none bg-white py-3 pl-4 pr-10 text-sm font-bold text-primary shadow-sm outline-none focus:ring-2 focus:ring-secondary/20 appearance-none cursor-pointer"
+                                                >
                                                     <option value="">Todas las especialidades</option>
-                                                    <option value="cardiologia">Cardiología</option>
-                                                    <option value="pediatria">Pediatría</option>
-                                                    <option value="neurologia">Neurología</option>
-                                                </select>
-                                            </div>
-                                            <div className="flex-1">
-                                                <label className="mb-1.5 ml-1 block text-[9px] font-black uppercase tracking-widest text-gray-400">Sede</label>
-                                                <select className="w-full rounded-xl border-none bg-white py-3 pl-4 pr-10 text-sm font-bold text-primary shadow-sm outline-none focus:ring-2 focus:ring-secondary/20 appearance-none cursor-pointer">
-                                                    <option value="">Todas las sedes</option>
-                                                    <option value="central">Sede Central</option>
-                                                    <option value="lujan">Sede Luján</option>
-                                                </select>
-                                            </div>
-                                            <div className="flex-1">
-                                                <label className="mb-1.5 ml-1 block text-[9px] font-black uppercase tracking-widest text-gray-400">Obra Social / Prepaga</label>
-                                                <select className="w-full rounded-xl border-none bg-white py-3 pl-4 pr-10 text-sm font-bold text-primary shadow-sm outline-none focus:ring-2 focus:ring-secondary/20 appearance-none cursor-pointer">
-                                                    <option value="">Cualquiera</option>
-                                                    <option value="particular">Particular</option>
-                                                    <option value="osde">OSDE</option>
-                                                    <option value="osep">OSEP</option>
+                                                    {especialidades_db.map(esp => (
+                                                        <option key={esp.id} value={esp.id}>{esp.nombre}</option>
+                                                    ))}
                                                 </select>
                                             </div>
                                         </div>
 
-                                        {/* GRILLA DE PROFESIONALES (Limpias, sin indicadores falsos) */}
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            
-                                            <div className="flex flex-col sm:flex-row gap-6 overflow-hidden rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-                                                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[#F8F9FA] text-gray-300">
-                                                    <span className="material-symbols-outlined text-[36px]">person</span>
-                                                </div>
-                                                <div className="flex flex-1 flex-col justify-between">
-                                                    <div>
-                                                        <h3 className="mb-0.5 text-lg font-black tracking-tight text-primary uppercase">Dr. Favaloro, Roberto</h3>
-                                                        <p className="text-[10px] font-black uppercase tracking-widest text-secondary mb-2">Cardiología</p>
-                                                        <p className="text-sm font-semibold text-gray-500">Sede Central</p>
+                                            {medicos_db.filter(prof => !cartillaEspecialidadFilter || prof.especialidad_id.toString() === cartillaEspecialidadFilter).map(prof => {
+                                                const espNombre = especialidades_db.find(e => e.id === prof.especialidad_id)?.nombre || 'Especialista';
+                                                return (
+                                                    <div key={prof.id} className="flex flex-col sm:flex-row gap-6 overflow-hidden rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+                                                        <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[#F8F9FA] text-gray-300">
+                                                            <span className="material-symbols-outlined text-[36px]">person</span>
+                                                        </div>
+                                                        <div className="flex flex-1 flex-col justify-between">
+                                                            <div>
+                                                                <h3 className="mb-0.5 text-lg font-black tracking-tight text-primary uppercase">Dr/a. {prof.apellido}, {prof.nombre}</h3>
+                                                                <p className="text-[10px] font-black uppercase tracking-widest text-secondary mb-2">{espNombre}</p>
+                                                                <p className="text-sm font-semibold text-gray-500">Sede Central</p>
+                                                            </div>
+                                                            <div className="mt-4 flex gap-3">
+                                                                <button className="flex-1 rounded-xl border border-gray-100 bg-white px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-primary transition-colors hover:bg-gray-50 hover:border-gray-200 text-center">
+                                                                    Ver Perfil
+                                                                </button>
+                                                                <button onClick={() => {
+                                                                    setNuevoTurno({ ...nuevoTurno, especialidad_id: prof.especialidad_id, especialidad: espNombre, medico_id: prof.id, medico: `${prof.apellido}, ${prof.nombre}` });
+                                                                    setModalStep(3);
+                                                                    setIsModalOpen(true);
+                                                                }} className="flex-1 rounded-xl bg-primary px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-white transition-colors hover:bg-secondary text-center">
+                                                                    Sacar Turno
+                                                                </button>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    <div className="mt-4 flex gap-3">
-                                                        <button className="flex-1 rounded-xl border border-gray-100 bg-white px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-primary transition-colors hover:bg-gray-50 hover:border-gray-200 text-center">
-                                                            Ver Perfil
-                                                        </button>
-                                                        <button className="flex-1 rounded-xl bg-primary px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-white transition-colors hover:bg-secondary text-center">
-                                                            Sacar Turno
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="flex flex-col sm:flex-row gap-6 overflow-hidden rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-                                                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[#F8F9FA] text-gray-300">
-                                                    <span className="material-symbols-outlined text-[36px]">person_4</span>
-                                                </div>
-                                                <div className="flex flex-1 flex-col justify-between">
-                                                    <div>
-                                                        <h3 className="mb-0.5 text-lg font-black tracking-tight text-primary uppercase">Dra. Martinez, Ana</h3>
-                                                        <p className="text-[10px] font-black uppercase tracking-widest text-secondary mb-2">Pediatría</p>
-                                                        <p className="text-sm font-semibold text-gray-500">Sede Luján</p>
-                                                    </div>
-                                                    <div className="mt-4 flex gap-3">
-                                                        <button className="flex-1 rounded-xl border border-gray-100 bg-white px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-primary transition-colors hover:bg-gray-50 hover:border-gray-200 text-center">
-                                                            Ver Perfil
-                                                        </button>
-                                                        <button className="flex-1 rounded-xl bg-primary px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-white transition-colors hover:bg-secondary text-center">
-                                                            Sacar Turno
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-
+                                                );
+                                            })}
                                         </div>
                                     </div>
                                 )}
                             </div>
-                        )}                 
-                        
-                        {/* =========================================
-                            SECCIÓN 5: MIS DOCUMENTOS
-                        ========================================= */}
-                        {tab === 'documentos' && (
-                            <div className="mx-auto max-w-6xl animate-fade-in">
-                                
-                                {/* HEADER Y BOTÓN DE SUBIDA */}
-                                <div className="mb-8 flex flex-col md:flex-row items-start md:items-end justify-between gap-4 border-b border-gray-100 pb-6">
-                                    <div>
-                                        <h1 className="mb-2 text-3xl font-black tracking-tight text-primary lg:text-4xl uppercase">Mis Documentos</h1>
-                                        <p className="font-semibold text-brandText">Gestión de certificados, facturación y archivos personales.</p>
-                                    </div>
-                                    <button className="group flex w-full md:w-auto shrink-0 items-center justify-center gap-3 rounded-2xl bg-secondary px-8 py-4 text-[12px] font-black uppercase tracking-widest text-white shadow-xl shadow-secondary/30 transition-all hover:scale-105 hover:bg-[#B38F5A]">
-                                        <span className="material-symbols-outlined text-[24px] transition-transform group-hover:-translate-y-1">cloud_upload</span>
-                                        Subir Archivo
-                                    </button>
-                                </div>
+                            )}
 
-                                {/* CARPETAS / CATEGORÍAS (Para no abrumar con listas) */}
-                                <div className="mb-10 grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    
-                                    <div className="group cursor-pointer rounded-[2rem] border border-gray-100 bg-[#F8F9FA] p-6 transition-all hover:border-secondary/30 hover:bg-white hover:shadow-md">
-                                        <div className="mb-4 flex items-center justify-between">
-                                            <span className="material-symbols-outlined text-[40px] text-blue-200 transition-colors group-hover:text-secondary">folder</span>
-                                            <span className="rounded-full bg-white px-3 py-1 text-[10px] font-black uppercase tracking-widest text-gray-400 shadow-sm">4 Archivos</span>
+                            {/* --- SECCIÓN 5: MIS DOCUMENTOS --- */}
+                            {tab === 'documentos' && (
+                                <div className="mx-auto max-w-6xl animate-fade-in">
+                                    <div className="mb-8 flex flex-col md:flex-row items-start md:items-end justify-between gap-4 border-b border-gray-100 pb-6">
+                                        <div>
+                                            <h1 className="mb-2 text-3xl font-black tracking-tight text-primary lg:text-4xl uppercase">Mis Documentos</h1>
+                                            <p className="font-semibold text-brandText">Gestión de certificados, facturación y archivos personales.</p>
                                         </div>
-                                        <h3 className="text-lg font-black uppercase tracking-tight text-primary">Certificados</h3>
-                                        <p className="mt-1 text-xs font-semibold text-gray-500">Aptos físicos y justificativos.</p>
-                                    </div>
-                                    
-                                    <div className="group cursor-pointer rounded-[2rem] border border-gray-100 bg-[#F8F9FA] p-6 transition-all hover:border-secondary/30 hover:bg-white hover:shadow-md">
-                                        <div className="mb-4 flex items-center justify-between">
-                                            <span className="material-symbols-outlined text-[40px] text-blue-200 transition-colors group-hover:text-secondary">folder</span>
-                                            <span className="rounded-full bg-white px-3 py-1 text-[10px] font-black uppercase tracking-widest text-gray-400 shadow-sm">12 Archivos</span>
-                                        </div>
-                                        <h3 className="text-lg font-black uppercase tracking-tight text-primary">Facturación</h3>
-                                        <p className="mt-1 text-xs font-semibold text-gray-500">Comprobantes y copagos.</p>
-                                    </div>
-                                    
-                                    <div className="group cursor-pointer rounded-[2rem] border border-gray-100 bg-[#F8F9FA] p-6 transition-all hover:border-secondary/30 hover:bg-white hover:shadow-md">
-                                        <div className="mb-4 flex items-center justify-between">
-                                            <span className="material-symbols-outlined text-[40px] text-blue-200 transition-colors group-hover:text-secondary">folder_shared</span>
-                                            <span className="rounded-full bg-white px-3 py-1 text-[10px] font-black uppercase tracking-widest text-gray-400 shadow-sm">2 Archivos</span>
-                                        </div>
-                                        <h3 className="text-lg font-black uppercase tracking-tight text-primary">Mis Subidas</h3>
-                                        <p className="mt-1 text-xs font-semibold text-gray-500">DNI, credenciales, externos.</p>
+                                        <button className="group flex w-full md:w-auto shrink-0 items-center justify-center gap-3 rounded-2xl bg-secondary px-8 py-4 text-[12px] font-black uppercase tracking-widest text-white shadow-xl shadow-secondary/30 transition-all hover:scale-105 hover:bg-[#B38F5A]">
+                                            <span className="material-symbols-outlined text-[24px] transition-transform group-hover:-translate-y-1">cloud_upload</span>
+                                            Subir Archivo
+                                        </button>
                                     </div>
 
-                                </div>
-
-                                {/* LISTA DE ARCHIVOS RECIENTES */}
-                                <h2 className="mb-6 text-[11px] font-black uppercase tracking-[0.3em] text-gray-400">Agregados Recientemente</h2>
-                                
-                                <div className="overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-sm">
-                                    <div className="hidden grid-cols-12 border-b border-gray-100 bg-[#F8F9FA] px-8 py-5 md:grid">
-                                        <span className="col-span-6 text-[10px] font-black uppercase tracking-widest text-brandText">Nombre del Archivo</span>
-                                        <span className="col-span-3 text-[10px] font-black uppercase tracking-widest text-brandText">Categoría</span>
-                                        <span className="col-span-3 text-right text-[10px] font-black uppercase tracking-widest text-brandText">Acción</span>
-                                    </div>
-                                    
-                                    <div className="flex flex-col">
-                                        {/* Archivo 1 (PDF) */}
-                                        <div className="grid grid-cols-1 items-center gap-4 border-b border-gray-50 px-6 py-4 transition-colors hover:bg-[#F8F9FA] md:grid-cols-12 md:px-8">
-                                            <div className="col-span-6 flex items-center gap-4 min-w-0">
-                                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-500">
-                                                    <span className="material-symbols-outlined text-[20px]">picture_as_pdf</span>
-                                                </div>
-                                                <div className="min-w-0">
-                                                    <p className="text-sm font-black text-primary truncate">Certificado_Apto_Fisico_2026.pdf</p>
-                                                    <p className="mt-0.5 text-[10px] font-semibold text-gray-400">15 Abr 2026 • 245 KB</p>
-                                                </div>
+                                    <div className="mb-10 grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div className="group cursor-pointer rounded-[2rem] border border-gray-100 bg-[#F8F9FA] p-6 transition-all hover:border-secondary/30 hover:bg-white hover:shadow-md">
+                                            <div className="mb-4 flex items-center justify-between">
+                                                <span className="material-symbols-outlined text-[40px] text-blue-200 transition-colors group-hover:text-secondary">folder</span>
+                                                <span className="rounded-full bg-white px-3 py-1 text-[10px] font-black uppercase tracking-widest text-gray-400 shadow-sm">4 Archivos</span>
                                             </div>
-                                            <div className="col-span-3 hidden md:block">
-                                                <span className="rounded-full bg-gray-100 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-gray-500">Certificados</span>
-                                            </div>
-                                            <div className="col-span-3 flex justify-start md:justify-end">
-                                                <button className="flex items-center gap-2 rounded-lg text-[10px] font-black uppercase tracking-widest text-secondary hover:underline">
-                                                    <span className="material-symbols-outlined text-[18px]">download</span> Descargar
-                                                </button>
-                                            </div>
+                                            <h3 className="text-lg font-black uppercase tracking-tight text-primary">Certificados</h3>
+                                            <p className="mt-1 text-xs font-semibold text-gray-500">Aptos físicos y justificativos.</p>
                                         </div>
+                                        
+                                        <div className="group cursor-pointer rounded-[2rem] border border-gray-100 bg-[#F8F9FA] p-6 transition-all hover:border-secondary/30 hover:bg-white hover:shadow-md">
+                                            <div className="mb-4 flex items-center justify-between">
+                                                <span className="material-symbols-outlined text-[40px] text-blue-200 transition-colors group-hover:text-secondary">folder</span>
+                                                <span className="rounded-full bg-white px-3 py-1 text-[10px] font-black uppercase tracking-widest text-gray-400 shadow-sm">12 Archivos</span>
+                                            </div>
+                                            <h3 className="text-lg font-black uppercase tracking-tight text-primary">Facturación</h3>
+                                            <p className="mt-1 text-xs font-semibold text-gray-500">Comprobantes y copagos.</p>
+                                        </div>
+                                        
+                                        <div className="group cursor-pointer rounded-[2rem] border border-gray-100 bg-[#F8F9FA] p-6 transition-all hover:border-secondary/30 hover:bg-white hover:shadow-md">
+                                            <div className="mb-4 flex items-center justify-between">
+                                                <span className="material-symbols-outlined text-[40px] text-blue-200 transition-colors group-hover:text-secondary">folder_shared</span>
+                                                <span className="rounded-full bg-white px-3 py-1 text-[10px] font-black uppercase tracking-widest text-gray-400 shadow-sm">2 Archivos</span>
+                                            </div>
+                                            <h3 className="text-lg font-black uppercase tracking-tight text-primary">Mis Subidas</h3>
+                                            <p className="mt-1 text-xs font-semibold text-gray-500">DNI, credenciales, externos.</p>
+                                        </div>
+                                    </div>
 
-                                        {/* Archivo 2 (Texto/Factura) */}
-                                        <div className="grid grid-cols-1 items-center gap-4 border-b border-gray-50 px-6 py-4 transition-colors hover:bg-[#F8F9FA] md:grid-cols-12 md:px-8">
-                                            <div className="col-span-6 flex items-center gap-4 min-w-0">
-                                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-primary">
-                                                    <span className="material-symbols-outlined text-[20px]">receipt_long</span>
+                                    <h2 className="mb-6 text-[11px] font-black uppercase tracking-[0.3em] text-gray-400">Agregados Recientemente</h2>
+                                    <div className="overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-sm">
+                                        <div className="hidden grid-cols-12 border-b border-gray-100 bg-[#F8F9FA] px-8 py-5 md:grid">
+                                            <span className="col-span-6 text-[10px] font-black uppercase tracking-widest text-brandText">Nombre del Archivo</span>
+                                            <span className="col-span-3 text-[10px] font-black uppercase tracking-widest text-brandText">Categoría</span>
+                                            <span className="col-span-3 text-right text-[10px] font-black uppercase tracking-widest text-brandText">Acción</span>
+                                        </div>
+                                        
+                                        <div className="flex flex-col">
+                                            <div className="grid grid-cols-1 items-center gap-4 border-b border-gray-50 px-6 py-4 transition-colors hover:bg-[#F8F9FA] md:grid-cols-12 md:px-8">
+                                                <div className="col-span-6 flex items-center gap-4 min-w-0">
+                                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-500">
+                                                        <span className="material-symbols-outlined text-[20px]">picture_as_pdf</span>
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <p className="text-sm font-black text-primary truncate">Certificado_Apto_Fisico_2026.pdf</p>
+                                                        <p className="mt-0.5 text-[10px] font-semibold text-gray-400">15 Abr 2026 • 245 KB</p>
+                                                    </div>
                                                 </div>
-                                                <div className="min-w-0">
-                                                    <p className="text-sm font-black text-primary truncate">Factura_0001_00004492.pdf</p>
-                                                    <p className="mt-0.5 text-[10px] font-semibold text-gray-400">10 Abr 2026 • 120 KB</p>
+                                                <div className="col-span-3 hidden md:block">
+                                                    <span className="rounded-full bg-gray-100 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-gray-500">Certificados</span>
+                                                </div>
+                                                <div className="col-span-3 flex justify-start md:justify-end">
+                                                    <button className="flex items-center gap-2 rounded-lg text-[10px] font-black uppercase tracking-widest text-secondary hover:underline">
+                                                        <span className="material-symbols-outlined text-[18px]">download</span> Descargar
+                                                    </button>
                                                 </div>
                                             </div>
-                                            <div className="col-span-3 hidden md:block">
-                                                <span className="rounded-full bg-gray-100 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-gray-500">Facturación</span>
-                                            </div>
-                                            <div className="col-span-3 flex justify-start md:justify-end">
-                                                <button className="flex items-center gap-2 rounded-lg text-[10px] font-black uppercase tracking-widest text-secondary hover:underline">
-                                                    <span className="material-symbols-outlined text-[18px]">download</span> Descargar
-                                                </button>
+
+                                            <div className="grid grid-cols-1 items-center gap-4 border-b border-gray-50 px-6 py-4 transition-colors hover:bg-[#F8F9FA] md:grid-cols-12 md:px-8">
+                                                <div className="col-span-6 flex items-center gap-4 min-w-0">
+                                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-primary">
+                                                        <span className="material-symbols-outlined text-[20px]">receipt_long</span>
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <p className="text-sm font-black text-primary truncate">Factura_0001_00004492.pdf</p>
+                                                        <p className="mt-0.5 text-[10px] font-semibold text-gray-400">10 Abr 2026 • 120 KB</p>
+                                                    </div>
+                                                </div>
+                                                <div className="col-span-3 hidden md:block">
+                                                    <span className="rounded-full bg-gray-100 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-gray-500">Facturación</span>
+                                                </div>
+                                                <div className="col-span-3 flex justify-start md:justify-end">
+                                                    <button className="flex items-center gap-2 rounded-lg text-[10px] font-black uppercase tracking-widest text-secondary hover:underline">
+                                                        <span className="material-symbols-outlined text-[18px]">download</span> Descargar
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        )}                        
-                        </div> {/* <-- CIERRE DEL WRAPPER DE CONTENIDO */}
-
-                        {/* FOOTER - DENTRO DEL CONTENEDOR CON SCROLL */}
-                        
-                        
-
+                            )}                        
+                        </div> 
                     </div>
                 </main>
 
-                {/* --- SIDEBAR DERECHO --- */}
+                {/* SIDEBAR DERECHO */}
                 <aside className="hidden w-80 shrink-0 flex-col border-l border-gray-50 bg-white xl:flex z-20">
                     <div className="relative flex h-24 shrink-0 items-center justify-end gap-5 border-b border-gray-50 bg-white px-8">
                         <button type="button" className="group relative flex h-10 w-10 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-[#F8F9FA] hover:text-primary">
@@ -830,7 +782,7 @@ export default function Dashboard({ auth, turnos = [] }) {
                         {renderProfileMenu('right-8')}
                     </div>
 
-                    <div className="flex-1 overflow-y-auto bg-[#F8F9FA]">
+                    <div className="flex-1 bg-[#F8F9FA]">
                         {tab === 'inicio' && (
                             <div className="p-8 animate-fade-in">
                                 <h2 className="mb-8 px-2 text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Novedades</h2>
@@ -854,11 +806,12 @@ export default function Dashboard({ auth, turnos = [] }) {
                         )}
                     </div>
                 </aside>
+                </div> {/* FIN DEL FLEX ROW DE 3 COLUMNAS */}
+
+                <Footer />
             </div>
 
-            {/* =========================================
-                RENDERIZADO DEL MODAL (Se coloca fuera del layout principal para que cubra toda la pantalla)
-            ========================================= */}
+            {/* RENDERIZADO DEL MODAL */}
             <TurnoModal 
                 isOpen={isModalOpen} 
                 onClose={closeModal} 
@@ -866,6 +819,9 @@ export default function Dashboard({ auth, turnos = [] }) {
                 setStep={setModalStep}
                 turnoData={nuevoTurno}
                 setTurnoData={setNuevoTurno}
+                especialidadesDb={especialidades_db} // 1. Pasamos base de datos real
+                medicosDb={medicos_db}               // 2. Pasamos base de datos real
+                user={auth?.user}                    // 3. Pasamos usuario real
             />
 
         </div>
@@ -888,15 +844,20 @@ function NewsCards() {
     );
 }
 
-function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData }) {
+// 4. Actualizamos Props del Modal para recibir la Data
+function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, especialidadesDb, medicosDb, user }) {
+    const [searchEspecialidad, setSearchEspecialidad] = useState('');
+
     if (!isOpen) return null;
 
-    const especialidades = [
-        'Cardiología', 'Clínica Médica', 'Dermatología', 'Endocrinología', 
-        'Gastroenterología', 'Ginecología', 'Neurología', 'Nutrición',
-        'Odontología', 'Oftalmología', 'Pediatría', 'Psiquiatría', 
-        'Traumatología', 'Urología'
-    ];
+    // Lógica dinámica: Filtramos según lo que el usuario apretó en el paso 1
+    const medicosFiltrados = medicosDb.filter(
+        (medico) => medico.especialidad_id === turnoData.especialidad_id
+    );
+
+    const especialidadesFiltradas = especialidadesDb.filter(esp => 
+        esp.nombre.toLowerCase().includes(searchEspecialidad.toLowerCase())
+    );
 
     return (
         <div 
@@ -940,41 +901,49 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData })
                 {/* Cuerpo del Modal con Scroll */}
                 <div className="flex-1 overflow-y-auto p-8 lg:p-10">
                     
-                    {/* PASO 1: ESPECIALIDAD */}
+                    {/* PASO 1: ESPECIALIDAD DINÁMICA */}
                     {step === 1 && (
                         <div className="animate-fade-in mx-auto w-full">
                             <div className="relative mb-8 mx-auto max-w-3xl">
                                 <span className="material-symbols-outlined absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 text-[28px]">search</span>
                                 <input 
                                     type="text" 
+                                    value={searchEspecialidad}
+                                    onChange={(e) => setSearchEspecialidad(e.target.value)}
                                     placeholder="Escriba la especialidad o síntoma (ej. Cardiología)..." 
                                     className="w-full rounded-2xl border-2 border-gray-100 bg-[#F8F9FA] py-4 pl-16 pr-6 text-base font-bold text-primary transition-all placeholder:text-gray-400 focus:border-secondary focus:bg-white focus:outline-none focus:ring-4 focus:ring-secondary/10" 
                                 />
                             </div>
                             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                                {especialidades.map((esp) => (
-                                    <button 
-                                        key={esp}
-                                        onClick={() => {
-                                            setTurnoData({ ...turnoData, especialidad: esp });
-                                            setStep(2);
-                                        }}
-                                        className="group flex flex-col items-start justify-center rounded-2xl border border-gray-100 bg-white p-5 text-left transition-all hover:-translate-y-1 hover:border-secondary/50 hover:bg-blue-50/30 hover:shadow-md"
-                                    >
-                                        <div className="flex w-full items-center justify-between mb-2">
-                                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400 transition-colors group-hover:bg-white group-hover:text-secondary">
-                                                <span className="material-symbols-outlined">medical_services</span>
+                                {especialidadesFiltradas.length > 0 ? (
+                                    especialidadesFiltradas.map((esp) => (
+                                        <button 
+                                            key={esp.id}
+                                            onClick={() => {
+                                                setTurnoData({ ...turnoData, especialidad_id: esp.id, especialidad: esp.nombre });
+                                                setStep(2);
+                                            }}
+                                            className="group flex flex-col items-start justify-center rounded-2xl border border-gray-100 bg-white p-5 text-left transition-all hover:-translate-y-1 hover:border-secondary/50 hover:bg-blue-50/30 hover:shadow-md"
+                                        >
+                                            <div className="flex w-full items-center justify-between mb-2">
+                                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400 transition-colors group-hover:bg-white group-hover:text-secondary">
+                                                    <span className="material-symbols-outlined">medical_services</span>
+                                                </div>
+                                                <span className="material-symbols-outlined text-gray-200 transition-transform group-hover:translate-x-1 group-hover:text-secondary">arrow_forward</span>
                                             </div>
-                                            <span className="material-symbols-outlined text-gray-200 transition-transform group-hover:translate-x-1 group-hover:text-secondary">arrow_forward</span>
-                                        </div>
-                                        <span className="text-sm font-black uppercase tracking-tight text-primary leading-tight">{esp}</span>
-                                    </button>
-                                ))}
+                                            <span className="text-sm font-black uppercase tracking-tight text-primary leading-tight">{esp.nombre}</span>
+                                        </button>
+                                    ))
+                                ) : (
+                                    <div className="col-span-full py-8 text-center text-gray-500 font-semibold">
+                                        No se encontraron especialidades con ese nombre.
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
 
-                    {/* PASO 2: PROFESIONAL */}
+                    {/* PASO 2: PROFESIONAL DINÁMICO */}
                     {step === 2 && (
                         <div className="animate-fade-in w-full max-w-5xl mx-auto">
                             <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -993,59 +962,41 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData })
 
                             <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                                 
-                                {/* Tarjeta Comodín */}
-                                <button
-                                    onClick={() => {
-                                        setTurnoData({ ...turnoData, medico: 'Cualquier profesional' });
-                                        setStep(3);
-                                    }}
-                                    className="group flex flex-col justify-center rounded-2xl border-2 border-dashed border-secondary/50 bg-secondary/5 p-5 text-left transition-all hover:border-secondary hover:bg-secondary/10"
-                                >
-                                    <div className="flex items-center gap-5 w-full">
-                                        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-white text-secondary shadow-sm transition-transform group-hover:scale-110">
-                                            <span className="material-symbols-outlined text-[32px]">bolt</span>
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="text-base font-black uppercase text-primary leading-tight">Cualquier Profesional</p>
-                                            <p className="mt-1 text-[11px] font-black text-secondary uppercase tracking-widest">Asignar el turno más rápido</p>
-                                        </div>
+                                {/* Mapeo de Médicos Filtrados */}
+                                {medicosFiltrados.length > 0 ? (
+                                    medicosFiltrados.map((prof) => (
+                                        <button
+                                            key={prof.id}
+                                            disabled={prof.turnos_disponibles === 0}
+                                            onClick={() => {
+                                                setTurnoData({ ...turnoData, medico_id: prof.id, medico: `${prof.apellido}, ${prof.nombre}` });
+                                                setStep(3);
+                                            }}
+                                            className={`flex items-center gap-5 rounded-2xl border p-5 text-left transition-all ${
+                                                prof.turnos_disponibles === 0 
+                                                ? 'border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed' 
+                                                : 'border-gray-200 bg-white hover:border-secondary/50 hover:shadow-md'
+                                            }`}
+                                        >
+                                            <div className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 ${prof.turnos_disponibles === 0 ? 'border-gray-200 bg-gray-200 text-gray-400' : 'border-primary bg-blue-50 text-primary'}`}>
+                                                <span className="material-symbols-outlined text-[28px]">person</span>
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="text-[10px] font-bold text-gray-400 uppercase mb-0.5">Dr/a</p>
+                                                <p className={`text-base font-black uppercase leading-tight ${prof.turnos_disponibles === 0 ? 'text-gray-500' : 'text-primary'}`}>
+                                                    {prof.apellido}, {prof.nombre}
+                                                </p>
+                                                <p className={`mt-1.5 text-[11px] font-black uppercase tracking-widest ${prof.turnos_disponibles === 0 ? 'text-red-400' : 'text-secondary'}`}>
+                                                    {prof.turnos_disponibles === 0 ? 'Sin disponibilidad actual' : `Turnos disponibles: ${prof.turnos_disponibles}`}
+                                                </p>
+                                            </div>
+                                        </button>
+                                    ))
+                                ) : (
+                                    <div className="col-span-1 md:col-span-2 text-center p-8 bg-gray-50 rounded-2xl border border-gray-100">
+                                        <p className="text-gray-500 font-semibold">No hay médicos cargados para esta especialidad todavía.</p>
                                     </div>
-                                </button>
-
-                                {/* Mapeo de Médicos */}
-                                {[
-                                    { id: 1, nombre: 'De Luca, Jose Pablo', turnos: 3 },
-                                    { id: 2, nombre: 'Seretti, Italo Bruno', turnos: 13 },
-                                    { id: 3, nombre: 'Sosa Escalada, Marcela Teresa', turnos: 5 },
-                                    { id: 4, nombre: 'Sammartino, Maria', turnos: 0 },
-                                ].map((prof) => (
-                                    <button
-                                        key={prof.id}
-                                        disabled={prof.turnos === 0}
-                                        onClick={() => {
-                                            setTurnoData({ ...turnoData, medico: prof.nombre });
-                                            setStep(3);
-                                        }}
-                                        className={`flex items-center gap-5 rounded-2xl border p-5 text-left transition-all ${
-                                            prof.turnos === 0 
-                                            ? 'border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed' 
-                                            : 'border-gray-200 bg-white hover:border-secondary/50 hover:shadow-md'
-                                        }`}
-                                    >
-                                        <div className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 ${prof.turnos === 0 ? 'border-gray-200 bg-gray-200 text-gray-400' : 'border-primary bg-blue-50 text-primary'}`}>
-                                            <span className="material-symbols-outlined text-[28px]">person</span>
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase mb-0.5">Dr/a</p>
-                                            <p className={`text-base font-black uppercase leading-tight ${prof.turnos === 0 ? 'text-gray-500' : 'text-primary'}`}>
-                                                {prof.nombre}
-                                            </p>
-                                            <p className={`mt-1.5 text-[11px] font-black uppercase tracking-widest ${prof.turnos === 0 ? 'text-red-400' : 'text-secondary'}`}>
-                                                {prof.turnos === 0 ? 'Sin disponibilidad actual' : `Turnos disponibles: ${prof.turnos}`}
-                                            </p>
-                                        </div>
-                                    </button>
-                                ))}
+                                )}
                             </div>
                         </div>
                     )}
@@ -1064,7 +1015,7 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData })
 
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                                 
-                                {/* Lado Izquierdo: Selección de Fecha (Mini Calendario) */}
+                                {/* Lado Izquierdo: Selección de Fecha */}
                                 <div>
                                     <h3 className="mb-6 flex items-center gap-2 text-lg font-black uppercase tracking-tight text-primary">
                                         <span className="material-symbols-outlined text-secondary text-[24px]">calendar_month</span>
@@ -1073,7 +1024,6 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData })
                                     <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
                                         <p className="text-center text-sm font-semibold text-gray-400 mb-4">Mayo 2026</p>
                                         <div className="grid grid-cols-5 gap-3">
-                                            {/* Fechas de ejemplo */}
                                             {[14, 15, 18, 19, 20, 21, 22].map((dia) => (
                                                 <button 
                                                     key={dia}
@@ -1113,7 +1063,7 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData })
                                                             key={hora}
                                                             onClick={() => {
                                                                 setTurnoData({ ...turnoData, hora });
-                                                                setStep(4); // Pasa al resumen final
+                                                                setStep(4);
                                                             }}
                                                             className="rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-black text-primary transition-all hover:border-secondary hover:bg-secondary/5 hover:text-secondary"
                                                         >
@@ -1130,7 +1080,7 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData })
                                                             key={hora}
                                                             onClick={() => {
                                                                 setTurnoData({ ...turnoData, hora });
-                                                                setStep(4); // Pasa al resumen final
+                                                                setStep(4);
                                                             }}
                                                             className="rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-black text-primary transition-all hover:border-secondary hover:bg-secondary/5 hover:text-secondary"
                                                         >
@@ -1146,11 +1096,10 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData })
                         </div>
                     )}
 
-                    {/* PASO 4: CONFIRMACIÓN... */}
+                    {/* PASO 4: CONFIRMACIÓN PREMIUM */}
                     {step === 4 && (
                         <div className="animate-fade-in mx-auto w-full max-w-4xl py-2">
                             
-                            {/* WARNING ROJO */}
                             <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 rounded-2xl border-2 border-red-100 bg-red-50 p-5 text-left shadow-sm max-w-3xl mx-auto">
                                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-500">
                                     <span className="material-symbols-outlined text-[28px]">warning</span>
@@ -1164,27 +1113,19 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData })
 
                             <h3 className="font-black text-2xl uppercase text-primary tracking-tight mb-8 text-center">Resumen del Turno</h3>
                             
-                            {/* CONTENEDOR DE DOBLE TARJETA (DISEÑO CLEAN/PREMIUM) */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 mb-10 text-left">
                                 
-                                {/* ---------------------------------------------
-                                    TARJETA 1: Detalles de la Cita 
-                                ---------------------------------------------- */}
+                                {/* Detalles de la Cita */}
                                 <div className="rounded-[24px] border border-gray-200 bg-white p-6 lg:p-8 shadow-sm transition-all hover:shadow-md flex flex-col">
-                                    
-                                    {/* Cabecera de Tarjeta */}
                                     <div className="mb-6 flex items-center gap-3 border-b border-gray-100 pb-4">
                                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary/10 text-secondary">
                                             <span className="material-symbols-outlined text-[20px]">calendar_month</span>
                                         </div>
                                         <h4 className="text-sm font-black uppercase tracking-widest text-primary">Detalles de la Cita</h4>
                                     </div>
-
-                                    {/* Bloque Destacado de Fecha/Hora */}
                                     <div className="mb-6 rounded-2xl bg-[#F8F9FA] p-4 border border-gray-100 flex items-center gap-5">
                                         <div className="flex flex-col items-center justify-center border-r border-gray-200 pr-5 min-w-[80px]">
                                             <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-0.5">Día</span>
-                                            {/* Extrae el número del día si viene en formato "14 de Mayo" */}
                                             <span className="text-2xl font-black text-secondary leading-none">
                                                 {turnoData.fecha ? turnoData.fecha.split(' ')[0] : '--'}
                                             </span>
@@ -1194,8 +1135,6 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData })
                                             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-0.5">{turnoData.fecha}</p>
                                         </div>
                                     </div>
-
-                                    {/* Grilla de Datos */}
                                     <div className="grid grid-cols-2 gap-5 flex-1">
                                         <div>
                                             <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Especialidad</p>
@@ -1212,58 +1151,50 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData })
                                     </div>
                                 </div>
 
-                                {/* ---------------------------------------------
-                                    TARJETA 2: Datos del Paciente 
-                                ---------------------------------------------- */}
+                                {/* Datos del Paciente Dinámicos */}
                                 <div className="rounded-[24px] border border-gray-200 bg-white p-6 lg:p-8 shadow-sm transition-all hover:shadow-md flex flex-col">
-                                    
-                                    {/* Cabecera de Tarjeta */}
                                     <div className="mb-6 flex items-center gap-3 border-b border-gray-100 pb-4">
                                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 text-primary">
                                             <span className="material-symbols-outlined text-[20px]">badge</span>
                                         </div>
                                         <h4 className="text-sm font-black uppercase tracking-widest text-primary">Identidad del Paciente</h4>
                                     </div>
-
-                                    {/* Perfil del Paciente */}
                                     <div className="mb-6 flex items-center gap-4">
                                         <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-400">
                                             <span className="material-symbols-outlined text-[28px]">person</span>
                                         </div>
                                         <div>
-                                            <p className="text-base font-black text-primary uppercase leading-tight">Mendoza, Juan Cruz</p>
-                                            <p className="text-xs font-bold text-gray-400 mt-0.5">DNI: 38.444.555</p>
+                                            <p className="text-base font-black text-primary uppercase leading-tight">
+                                                {user?.last_name}, {user?.name}
+                                            </p>
+                                            <p className="text-xs font-bold text-gray-400 mt-0.5">DNI: {user?.dni}</p>
                                         </div>
                                     </div>
-
-                                    {/* Caja de Cobertura */}
                                     <div className="mb-6 rounded-xl bg-[#F8F9FA] p-4 border border-gray-100 flex justify-between items-center">
                                         <div>
                                             <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Cobertura Médica</p>
-                                            <p className="text-sm font-black text-primary">OSDE (Plan 210)</p>
+                                            <p className="text-sm font-black text-primary">
+                                                {user?.obra_social || 'Particular'} {user?.plan ? `(Plan ${user?.plan})` : ''}
+                                            </p>
                                         </div>
                                         <div className="text-right border-l border-gray-200 pl-4">
                                             <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Nro. Afiliado</p>
-                                            <p className="text-sm font-black text-primary">00012345601</p>
+                                            <p className="text-sm font-black text-primary">Autogenerado</p>
                                         </div>
                                     </div>
-
-                                    {/* Datos de Contacto */}
                                     <div className="grid grid-cols-2 gap-4 mt-auto pt-2 border-t border-gray-50">
                                         <div>
                                             <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Email Registrado</p>
-                                            <p className="text-xs font-bold text-primary truncate">juan.mendoza@email.com</p>
+                                            <p className="text-xs font-bold text-primary truncate">{user?.email}</p>
                                         </div>
                                         <div>
                                             <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Teléfono</p>
-                                            <p className="text-xs font-bold text-primary truncate">+54 9 261 123 4567</p>
+                                            <p className="text-xs font-bold text-primary truncate">{user?.phone || 'No registrado'}</p>
                                         </div>
                                     </div>
                                 </div>
-
                             </div>
 
-                            {/* BOTONES DE ACCIÓN GLOBALES */}
                             <div className="flex flex-col sm:flex-row justify-center gap-4 border-t border-gray-100 pt-8">
                                 <button 
                                     onClick={() => setStep(3)} 
@@ -1272,7 +1203,20 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData })
                                     Volver a editar
                                 </button>
                                 <button 
-                                    onClick={onClose} 
+                                    onClick={() => {
+                                        // Enviamos los datos al backend vía Inertia
+                                        router.post(route('turnos.store'), {
+                                            especialidad_id: turnoData.especialidad_id,
+                                            medico_id: turnoData.medico_id,
+                                            fecha: turnoData.fecha,
+                                            hora: turnoData.hora
+                                        }, {
+                                            preserveScroll: true, // Evita que la página salte al inicio
+                                            onSuccess: () => {
+                                                onClose(); // Cierra el modal solo si todo salió bien
+                                            }
+                                        });
+                                    }} 
                                     className="w-full sm:w-auto px-10 py-4 bg-secondary shadow-lg shadow-secondary/30 text-white rounded-xl text-sm font-black uppercase tracking-widest hover:scale-105 hover:bg-[#B38F5A] transition-all flex items-center justify-center gap-2"
                                 >
                                     <span className="material-symbols-outlined text-[20px]">check_circle</span>
@@ -1281,7 +1225,6 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData })
                             </div>
                         </div>
                     )}
-                    
                 </div>
             </div>
         </div>
