@@ -51,6 +51,7 @@ Route::get('/dashboard', function () {
 
 // 3. RUTAS DE TURNOS
 Route::post('/turnos', [TurnoController::class, 'store'])->middleware(['auth'])->name('turnos.store');
+Route::delete('/turnos/{id}', [TurnoController::class, 'destroy'])->middleware(['auth'])->name('turnos.destroy');
 
 // 4. RUTAS DE AUTENTICACIÓN (Fundamental para el Login y Logout)
 require __DIR__.'/auth.php';

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Head, Link, useForm, router} from '@inertiajs/react';
 
 // 1. Recibimos especialidades_db y medicos_db desde el Controlador de Laravel
@@ -103,8 +103,29 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
         }, 300);
     };
 
+    // Estado para la notificación verde (Toast)
+    const [toast, setToast] = useState(null);
+
+    // Efecto para ocultar el Toast automáticamente a los 3 segundos
+    useEffect(() => {
+        if (toast) {
+            const timer = setTimeout(() => setToast(null), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [toast]);
+
+    // Función para cancelar turnos
+    const handleCancelarTurno = (id) => {
+        if (window.confirm('¿Estás seguro de que querés cancelar este turno? Esta acción no se puede deshacer.')) {
+            router.delete(route('turnos.destroy', id), {
+                preserveScroll: true,
+                onSuccess: () => setToast('Turno cancelado correctamente.'),
+            });
+        }
+    };
+
     return (
-        <div className="min-h-screen bg-primary p-3 font-sans antialiased lg:p-4">
+        <div className="min-h-screen bg-primary p-3 font-sans antialiased lg:p-4 relative">
             <Head title="Home | Hospital Universitario" />
 
             <div className="mx-auto flex flex-col min-h-[calc(100vh-1.5rem)] w-full max-w-[1900px] overflow-hidden rounded-[2rem] bg-white shadow-2xl lg:min-h-[calc(100vh-2rem)]">
@@ -151,7 +172,7 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                                 type="text" 
                                 value={globalSearch}
                                 onChange={(e) => setGlobalSearch(e.target.value)}
-                                placeholder="Buscar médico, especialidad, estudios..." 
+                                placeholder="Buscar médico, especialidad..." 
                                 className="w-full rounded-2xl border-none bg-[#F8F9FA] py-3.5 pl-12 pr-4 text-sm font-semibold text-primary transition-all placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-secondary/20" 
                             />
                             {globalSearch.length > 1 && (
@@ -257,8 +278,12 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                                                         </div>
                                                     </div>
                                                     <div className="flex relative z-10 border-t border-white/10 pt-6">
-                                                        <button className="w-full sm:w-auto rounded-xl border border-white/20 bg-transparent px-6 py-3 text-[11px] font-black uppercase tracking-widest text-white transition-colors hover:bg-red-500/20 hover:border-red-500/50 flex items-center justify-center gap-2">
-                                                            <span className="material-symbols-outlined text-[18px]">event_busy</span> Cancelar Turno
+                                                        <button 
+                                                            onClick={() => handleCancelarTurno(turnosFuturos[0].id)} 
+                                                            className="group flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-6 py-3 text-[11px] font-black uppercase tracking-widest text-white/70 transition-all duration-300 hover:border-red-500 hover:bg-red-500 hover:text-white hover:shadow-lg hover:shadow-red-500/30"
+                                                        >
+                                                            <span className="material-symbols-outlined text-[18px] transition-transform duration-300 group-hover:scale-110">event_busy</span> 
+                                                            Cancelar Turno
                                                         </button>
                                                     </div>
                                                 </div>
@@ -366,8 +391,12 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                                                                 <p className="text-[10px] font-medium text-gray-400">Consultorio 04</p>
                                                             </div>
                                                             <div className="flex justify-start lg:justify-center">
-                                                                <button className="w-full lg:w-auto text-[10px] font-black uppercase tracking-widest text-red-500 bg-red-50 px-5 py-2.5 rounded-xl hover:bg-red-100 transition-colors flex items-center justify-center gap-2">
-                                                                    <span className="material-symbols-outlined text-[18px]">event_busy</span> Cancelar
+                                                                <button 
+                                                                    onClick={() => handleCancelarTurno(turno.id)} 
+                                                                    className="group flex w-full lg:w-auto items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-gray-500 transition-all duration-300 hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                                                                >
+                                                                    <span className="material-symbols-outlined text-[16px] transition-transform duration-300 group-hover:-rotate-12">event_busy</span> 
+                                                                    Cancelar
                                                                 </button>
                                                             </div>
                                                         </div>
@@ -554,7 +583,7 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                                 </div>
                             )}
 
-                            {/* --- SECCIÓN 4: CARTILLA MÉDICA (AHORA CON DATOS DINÁMICOS) --- */}
+                            {/* --- SECCIÓN 4: CARTILLA MÉDICA --- */}
                             {tab === 'cartilla' && (
                             <div className="mx-auto max-w-6xl">
                                 
@@ -580,7 +609,7 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                                     </button>
                                 </div>
 
-                                {/* VISTA 1: ESPECIALIDADES DINÁMICAS */}
+                                {/* VISTA 1: ESPECIALIDADES */}
                                 {subTabCartilla === 'especialidades' && (
                                     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 animate-fade-in">
                                         {especialidades_db.map(esp => (
@@ -602,7 +631,7 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                                                         setSubTabCartilla('profesionales');
                                                     }}
                                                 >
-                                                    <span className="text-[10px] font-black uppercase tracking-widest text-secondary">Ver plantel</span>
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-secondary">Ver profesionales</span>
                                                     <span className="material-symbols-outlined text-secondary">arrow_forward</span>
                                                 </div>
                                             </div>
@@ -610,7 +639,7 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                                     </div>
                                 )}
 
-                                {/* VISTA 2: PROFESIONALES DINÁMICOS */}
+                                {/* VISTA 2: PROFESIONALES */}
                                 {subTabCartilla === 'profesionales' && (
                                     <div className="animate-fade-in">
                                         <div className="mb-8 flex flex-col md:flex-row gap-4 rounded-2xl bg-[#F8F9FA] border border-gray-100 p-4">
@@ -806,7 +835,7 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                         )}
                     </div>
                 </aside>
-                </div> {/* FIN DEL FLEX ROW DE 3 COLUMNAS */}
+                </div>
 
                 <Footer />
             </div>
@@ -822,8 +851,19 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                 especialidadesDb={especialidades_db} // 1. Pasamos base de datos real
                 medicosDb={medicos_db}               // 2. Pasamos base de datos real
                 user={auth?.user}                    // 3. Pasamos usuario real
+                setToast={setToast}                  // 4. Pasamos función para notificación
             />
 
+            {/* NOTIFICACIÓN FLOTANTE (TOAST) */}
+            {toast && (
+                <div className="fixed bottom-6 right-6 z-[200] flex animate-fade-in items-center gap-3 rounded-2xl bg-emerald-500 px-6 py-4 text-white shadow-2xl">
+                    <span className="material-symbols-outlined">check_circle</span>
+                    <p className="text-sm font-black uppercase tracking-widest">{toast}</p>
+                    <button onClick={() => setToast(null)} className="ml-2 hover:text-emerald-100">
+                        <span className="material-symbols-outlined text-lg">close</span>
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
@@ -844,13 +884,12 @@ function NewsCards() {
     );
 }
 
-// 4. Actualizamos Props del Modal para recibir la Data
-function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, especialidadesDb, medicosDb, user }) {
+// 4. Actualizamos Props del Modal para recibir la Data y Mostrar Notificación
+function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, especialidadesDb, medicosDb, user, setToast }) {
     const [searchEspecialidad, setSearchEspecialidad] = useState('');
 
     if (!isOpen) return null;
 
-    // Lógica dinámica: Filtramos según lo que el usuario apretó en el paso 1
     const medicosFiltrados = medicosDb.filter(
         (medico) => medico.especialidad_id === turnoData.especialidad_id
     );
@@ -859,34 +898,33 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
         esp.nombre.toLowerCase().includes(searchEspecialidad.toLowerCase())
     );
 
+    // Funciones de validación para habilitar el botón "Continuar"
+    const canContinue = () => {
+        if (step === 1) return turnoData.especialidad_id !== null;
+        if (step === 2) return turnoData.medico_id !== null;
+        if (step === 3) return turnoData.fecha !== null && turnoData.hora !== null;
+        return true;
+    };
+
     return (
         <div 
             className="fixed inset-0 z-[100] flex items-center justify-center bg-primary/50 p-4 sm:p-6 backdrop-blur-md animate-fade-in cursor-pointer"
             onClick={onClose}
         >
             <div 
-                className="relative flex w-full max-w-5xl flex-col overflow-hidden rounded-[2rem] bg-white shadow-2xl min-h-[600px] max-h-[90vh] cursor-auto"
+                className="relative flex w-full max-w-5xl flex-col overflow-hidden rounded-[2rem] bg-white shadow-2xl h-[85vh] cursor-auto"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header del Modal */}
                 <div className="flex shrink-0 items-center justify-between border-b border-gray-100 bg-[#F8F9FA] px-8 py-6">
-                    <div className="flex items-center gap-4">
-                        {step > 1 && (
-                            <button onClick={() => setStep(step - 1)} className="flex h-10 w-10 items-center justify-center rounded-full text-primary transition-colors hover:bg-gray-200">
-                                <span className="material-symbols-outlined text-[24px]">arrow_back</span>
-                            </button>
-                        )}
-                        <div>
-                            <p className="text-[11px] font-black uppercase tracking-[0.2em] text-secondary mb-1">
-                                Paso {step} de 4
-                            </p>
-                            <h2 className="text-2xl font-black tracking-tight text-primary uppercase">
-                                {step === 1 && '¿Qué especialidad busca?'}
-                                {step === 2 && 'Seleccione profesional'}
-                                {step === 3 && 'Seleccione Fecha y Hora'}
-                                {step === 4 && 'Confirmar Turno'}
-                            </h2>
-                        </div>
+                    <div>
+                        <p className="text-[11px] font-black uppercase tracking-[0.2em] text-secondary mb-1">Paso {step} de 4</p>
+                        <h2 className="text-2xl font-black tracking-tight text-primary uppercase">
+                            {step === 1 && '¿Qué especialidad busca?'}
+                            {step === 2 && 'Seleccione profesional'}
+                            {step === 3 && 'Seleccione Fecha y Hora'}
+                            {step === 4 && 'Confirmar Turno'}
+                        </h2>
                     </div>
                     <button onClick={onClose} className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-all hover:bg-red-50 hover:text-red-500">
                         <span className="material-symbols-outlined text-[24px]">close</span>
@@ -910,7 +948,7 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                                     type="text" 
                                     value={searchEspecialidad}
                                     onChange={(e) => setSearchEspecialidad(e.target.value)}
-                                    placeholder="Escriba la especialidad o síntoma (ej. Cardiología)..." 
+                                    placeholder="Buscar especialidad..." 
                                     className="w-full rounded-2xl border-2 border-gray-100 bg-[#F8F9FA] py-4 pl-16 pr-6 text-base font-bold text-primary transition-all placeholder:text-gray-400 focus:border-secondary focus:bg-white focus:outline-none focus:ring-4 focus:ring-secondary/10" 
                                 />
                             </div>
@@ -919,17 +957,18 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                                     especialidadesFiltradas.map((esp) => (
                                         <button 
                                             key={esp.id}
-                                            onClick={() => {
-                                                setTurnoData({ ...turnoData, especialidad_id: esp.id, especialidad: esp.nombre });
-                                                setStep(2);
-                                            }}
-                                            className="group flex flex-col items-start justify-center rounded-2xl border border-gray-100 bg-white p-5 text-left transition-all hover:-translate-y-1 hover:border-secondary/50 hover:bg-blue-50/30 hover:shadow-md"
+                                            onClick={() => setTurnoData({ ...turnoData, especialidad_id: esp.id, especialidad: esp.nombre, medico_id: null, medico: null })}
+                                            className={`group flex flex-col items-start justify-center rounded-2xl border-2 p-5 text-left transition-all hover:-translate-y-1 ${
+                                                turnoData.especialidad_id === esp.id 
+                                                ? 'border-secondary bg-blue-50/50 shadow-md' 
+                                                : 'border-transparent border-gray-100 bg-white hover:border-secondary/30'
+                                            }`}
                                         >
                                             <div className="flex w-full items-center justify-between mb-2">
-                                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400 transition-colors group-hover:bg-white group-hover:text-secondary">
+                                                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors ${turnoData.especialidad_id === esp.id ? 'bg-secondary text-white' : 'bg-gray-50 text-gray-400'}`}>
                                                     <span className="material-symbols-outlined">medical_services</span>
                                                 </div>
-                                                <span className="material-symbols-outlined text-gray-200 transition-transform group-hover:translate-x-1 group-hover:text-secondary">arrow_forward</span>
+                                                {turnoData.especialidad_id === esp.id && <span className="material-symbols-outlined text-secondary">check_circle</span>}
                                             </div>
                                             <span className="text-sm font-black uppercase tracking-tight text-primary leading-tight">{esp.nombre}</span>
                                         </button>
@@ -943,7 +982,7 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                         </div>
                     )}
 
-                    {/* PASO 2: PROFESIONAL DINÁMICO */}
+                    {/* PASO 2: PROFESIONAL */}
                     {step === 2 && (
                         <div className="animate-fade-in w-full max-w-5xl mx-auto">
                             <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -961,24 +1000,21 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                             </div>
 
                             <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-                                
-                                {/* Mapeo de Médicos Filtrados */}
                                 {medicosFiltrados.length > 0 ? (
                                     medicosFiltrados.map((prof) => (
                                         <button
                                             key={prof.id}
                                             disabled={prof.turnos_disponibles === 0}
-                                            onClick={() => {
-                                                setTurnoData({ ...turnoData, medico_id: prof.id, medico: `${prof.apellido}, ${prof.nombre}` });
-                                                setStep(3);
-                                            }}
-                                            className={`flex items-center gap-5 rounded-2xl border p-5 text-left transition-all ${
+                                            onClick={() => setTurnoData({ ...turnoData, medico_id: prof.id, medico: `${prof.apellido}, ${prof.nombre}` })}
+                                            className={`flex items-center gap-5 rounded-2xl border-2 p-5 text-left transition-all ${
                                                 prof.turnos_disponibles === 0 
                                                 ? 'border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed' 
-                                                : 'border-gray-200 bg-white hover:border-secondary/50 hover:shadow-md'
+                                                : turnoData.medico_id === prof.id
+                                                    ? 'border-secondary bg-blue-50/50 shadow-md'
+                                                    : 'border-transparent border-gray-200 bg-white hover:border-secondary/30'
                                             }`}
                                         >
-                                            <div className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 ${prof.turnos_disponibles === 0 ? 'border-gray-200 bg-gray-200 text-gray-400' : 'border-primary bg-blue-50 text-primary'}`}>
+                                            <div className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 ${turnoData.medico_id === prof.id ? 'border-secondary bg-secondary text-white' : 'border-primary bg-blue-50 text-primary'}`}>
                                                 <span className="material-symbols-outlined text-[28px]">person</span>
                                             </div>
                                             <div className="flex-1">
@@ -990,6 +1026,7 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                                                     {prof.turnos_disponibles === 0 ? 'Sin disponibilidad actual' : `Turnos disponibles: ${prof.turnos_disponibles}`}
                                                 </p>
                                             </div>
+                                            {turnoData.medico_id === prof.id && <span className="material-symbols-outlined text-secondary">check_circle</span>}
                                         </button>
                                     ))
                                 ) : (
@@ -1014,7 +1051,6 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                             </div>
 
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                                
                                 {/* Lado Izquierdo: Selección de Fecha */}
                                 <div>
                                     <h3 className="mb-6 flex items-center gap-2 text-lg font-black uppercase tracking-tight text-primary">
@@ -1027,14 +1063,14 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                                             {[14, 15, 18, 19, 20, 21, 22].map((dia) => (
                                                 <button 
                                                     key={dia}
-                                                    onClick={() => setTurnoData({ ...turnoData, fecha: `${dia} de Mayo` })}
+                                                    onClick={() => setTurnoData({ ...turnoData, fecha: `${dia} de Mayo`, hora: null })}
                                                     className={`flex flex-col items-center justify-center rounded-2xl py-3 transition-all ${
                                                         turnoData.fecha === `${dia} de Mayo`
                                                         ? 'bg-primary text-white shadow-md'
                                                         : 'bg-[#F8F9FA] text-primary hover:bg-secondary/10 hover:text-secondary'
                                                     }`}
                                                 >
-                                                    <span className="text-[10px] font-bold uppercase tracking-widest opacity-80 mb-1">Mie</span>
+                                                    <span className="text-[10px] font-bold uppercase tracking-widest opacity-80 mb-1">May</span>
                                                     <span className="text-xl font-black leading-none">{dia}</span>
                                                 </button>
                                             ))}
@@ -1061,11 +1097,8 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                                                     {['09:00', '09:30', '10:15', '11:00'].map(hora => (
                                                         <button 
                                                             key={hora}
-                                                            onClick={() => {
-                                                                setTurnoData({ ...turnoData, hora });
-                                                                setStep(4);
-                                                            }}
-                                                            className="rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-black text-primary transition-all hover:border-secondary hover:bg-secondary/5 hover:text-secondary"
+                                                            onClick={() => setTurnoData({ ...turnoData, hora })}
+                                                            className={`rounded-xl border px-5 py-2.5 text-sm font-black transition-all ${turnoData.hora === hora ? 'border-secondary bg-secondary text-white' : 'border-gray-200 bg-white text-primary hover:border-secondary'}`}
                                                         >
                                                             {hora}
                                                         </button>
@@ -1078,11 +1111,8 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                                                     {['14:00', '15:30', '16:00'].map(hora => (
                                                         <button 
                                                             key={hora}
-                                                            onClick={() => {
-                                                                setTurnoData({ ...turnoData, hora });
-                                                                setStep(4);
-                                                            }}
-                                                            className="rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-black text-primary transition-all hover:border-secondary hover:bg-secondary/5 hover:text-secondary"
+                                                            onClick={() => setTurnoData({ ...turnoData, hora })}
+                                                            className={`rounded-xl border px-5 py-2.5 text-sm font-black transition-all ${turnoData.hora === hora ? 'border-secondary bg-secondary text-white' : 'border-gray-200 bg-white text-primary hover:border-secondary'}`}
                                                         >
                                                             {hora}
                                                         </button>
@@ -1096,7 +1126,7 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                         </div>
                     )}
 
-                    {/* PASO 4: CONFIRMACIÓN PREMIUM */}
+                    {/* PASO 4: CONFIRMACIÓN */}
                     {step === 4 && (
                         <div className="animate-fade-in mx-auto w-full max-w-4xl py-2">
                             
@@ -1167,7 +1197,7 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                                             <p className="text-base font-black text-primary uppercase leading-tight">
                                                 {user?.last_name}, {user?.name}
                                             </p>
-                                            <p className="text-xs font-bold text-gray-400 mt-0.5">DNI: {user?.dni}</p>
+                                            <p className="text-xs font-bold text-gray-400 mt-0.5">DNI: {user?.dni || '20.123.456'}</p>
                                         </div>
                                     </div>
                                     <div className="mb-6 rounded-xl bg-[#F8F9FA] p-4 border border-gray-100 flex justify-between items-center">
@@ -1194,36 +1224,45 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                                     </div>
                                 </div>
                             </div>
-
-                            <div className="flex flex-col sm:flex-row justify-center gap-4 border-t border-gray-100 pt-8">
-                                <button 
-                                    onClick={() => setStep(3)} 
-                                    className="w-full sm:w-auto px-8 py-4 rounded-xl border border-gray-200 text-sm font-black uppercase tracking-widest text-gray-500 hover:bg-gray-50 hover:text-primary transition-colors"
-                                >
-                                    Volver a editar
-                                </button>
-                                <button 
-                                    onClick={() => {
-                                        // Enviamos los datos al backend vía Inertia
-                                        router.post(route('turnos.store'), {
-                                            especialidad_id: turnoData.especialidad_id,
-                                            medico_id: turnoData.medico_id,
-                                            fecha: turnoData.fecha,
-                                            hora: turnoData.hora
-                                        }, {
-                                            preserveScroll: true, // Evita que la página salte al inicio
-                                            onSuccess: () => {
-                                                onClose(); // Cierra el modal solo si todo salió bien
-                                            }
-                                        });
-                                    }} 
-                                    className="w-full sm:w-auto px-10 py-4 bg-secondary shadow-lg shadow-secondary/30 text-white rounded-xl text-sm font-black uppercase tracking-widest hover:scale-105 hover:bg-[#B38F5A] transition-all flex items-center justify-center gap-2"
-                                >
-                                    <span className="material-symbols-outlined text-[20px]">check_circle</span>
-                                    Confirmar Turno
-                                </button>
-                            </div>
                         </div>
+                    )}
+                </div>
+
+                {/* Footer del Modal: Botones de Navegación "Volver" y "Continuar" */}
+                <div className="shrink-0 border-t border-gray-100 bg-white px-8 py-5 flex items-center justify-between">
+                    {step > 1 ? (
+                        <button onClick={() => setStep(step - 1)} className="flex items-center gap-2 rounded-xl border border-gray-200 px-6 py-3 text-xs font-black uppercase tracking-widest text-gray-500 transition-colors hover:bg-gray-50">
+                            <span className="material-symbols-outlined text-[18px]">arrow_back</span> Volver
+                        </button>
+                    ) : (
+                        <div></div> // Spacer para mantener el botón de continuar a la derecha
+                    )}
+
+                    {step < 4 ? (
+                        <button 
+                            disabled={!canContinue()} 
+                            onClick={() => setStep(step + 1)} 
+                            className={`flex items-center gap-2 rounded-xl px-8 py-3 text-xs font-black uppercase tracking-widest text-white transition-all ${
+                                canContinue() ? 'bg-secondary hover:bg-[#B38F5A] shadow-lg shadow-secondary/30' : 'bg-gray-300 cursor-not-allowed'
+                            }`}
+                        >
+                            Continuar <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                        </button>
+                    ) : (
+                        <button 
+                            onClick={() => {
+                                router.post(route('turnos.store'), turnoData, {
+                                    preserveScroll: true,
+                                    onSuccess: () => {
+                                        onClose(); 
+                                        setToast('¡Turno confirmado con éxito!'); // Lanzamos el Toast
+                                    }
+                                });
+                            }} 
+                            className="flex items-center gap-2 rounded-xl bg-green-500 px-8 py-3 text-xs font-black uppercase tracking-widest text-white transition-all hover:bg-green-600 shadow-lg shadow-green-500/30"
+                        >
+                            <span className="material-symbols-outlined text-[18px]">check_circle</span> Confirmar Turno
+                        </button>
                     )}
                 </div>
             </div>
