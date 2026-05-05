@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Head, Link, useForm, router} from '@inertiajs/react';
+import { Head, useForm, router } from '@inertiajs/react';
 
-// 1. Recibimos especialidades_db y medicos_db desde el Controlador de Laravel
+// Recibimos especialidades_db y medicos_db desde el Controlador de Laravel
 export default function Dashboard({ auth, turnos = [], especialidades_db = [], medicos_db = [] }) {
     const [tab, setTab] = useState('inicio');
     const [subTabTurnos, setSubTabTurnos] = useState('proximos'); 
@@ -69,7 +69,6 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
     const renderProfileMenu = (align = 'right-0') => (
         profileOpen && (
             <div className={`absolute top-14 ${align} z-50 w-56 rounded-2xl border border-gray-100 bg-white py-2 shadow-2xl`}>
-                {/* Cambiamos el <Link> por una etiqueta <a> común y le sacamos la ruta rota temporalmente */}
                 <a href="#" className="flex items-center gap-3 px-5 py-3 text-sm font-bold text-brandText transition-colors hover:bg-[#F8F9FA]">
                     <span className="material-symbols-outlined text-secondary">person</span> Mi Perfil
                 </a>
@@ -83,7 +82,7 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
         )
     );
 
-    // Estados para el Modal de Nuevo Turno (Ahora con IDs)
+    // Estados para el Modal de Nuevo Turno
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalStep, setModalStep] = useState(1);
     const [nuevoTurno, setNuevoTurno] = useState({
@@ -103,10 +102,8 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
         }, 300);
     };
 
-    // Estado para la notificación verde (Toast)
     const [toast, setToast] = useState(null);
 
-    // Efecto para ocultar el Toast automáticamente a los 3 segundos
     useEffect(() => {
         if (toast) {
             const timer = setTimeout(() => setToast(null), 3000);
@@ -114,7 +111,6 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
         }
     }, [toast]);
 
-    // Función para cancelar turnos
     const handleCancelarTurno = (id) => {
         if (window.confirm('¿Estás seguro de que querés cancelar este turno? Esta acción no se puede deshacer.')) {
             router.delete(route('turnos.destroy', id), {
@@ -145,7 +141,7 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                 {/* CONTENIDO PRINCIPAL */}
                 <main className="flex min-w-0 flex-1 flex-col bg-white">
                     
-                    {/* Header */}
+                    {/* Header Top */}
                     <header className="shrink-0 border-b border-gray-50 px-5 py-4 lg:px-12 lg:py-6">
                         <div className="mb-4 flex items-center justify-between gap-4 lg:hidden">
                             <button type="button" onClick={() => setMobileMenu((value) => !value)} className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#F8F9FA] text-primary transition-colors hover:bg-gray-100">
@@ -173,11 +169,20 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                                 value={globalSearch}
                                 onChange={(e) => setGlobalSearch(e.target.value)}
                                 placeholder="Buscar médico, especialidad..." 
-                                className="w-full rounded-2xl border-none bg-[#F8F9FA] py-3.5 pl-12 pr-4 text-sm font-semibold text-primary transition-all placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-secondary/20" 
+                                className="w-full rounded-2xl border-none bg-[#F8F9FA] py-3.5 pl-12 pr-12 text-sm font-semibold text-primary transition-all placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-secondary/20" 
                             />
+                            {/* UX: Botón rápido para limpiar búsqueda */}
+                            {globalSearch && (
+                                <button 
+                                    onClick={() => setGlobalSearch('')}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors"
+                                >
+                                    <span className="material-symbols-outlined text-[20px]">cancel</span>
+                                </button>
+                            )}
+
                             {globalSearch.length > 1 && (
-                                <div className="absolute top-full left-0 w-full mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden max-h-[400px] overflow-y-auto">
-                                    {/* Resultados Especialidades */}
+                                <div className="absolute top-full left-0 w-full mt-2 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden max-h-[400px] overflow-y-auto">
                                     {especialidades_db.filter(e => e.nombre.toLowerCase().includes(globalSearch.toLowerCase())).map(esp => (
                                         <button key={`esp-${esp.id}`} onClick={() => {
                                             setCartillaEspecialidadFilter(esp.id.toString());
@@ -192,7 +197,6 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                                             </div>
                                         </button>
                                     ))}
-                                    {/* Resultados Médicos */}
                                     {medicos_db.filter(m => (m.nombre + ' ' + m.apellido).toLowerCase().includes(globalSearch.toLowerCase())).map(med => (
                                         <button key={`med-${med.id}`} onClick={() => {
                                             setCartillaEspecialidadFilter(med.especialidad_id.toString());
@@ -223,13 +227,16 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                             {/* --- SECCIÓN 1: INICIO --- */}
                             {tab === 'inicio' && (
                                 <div className="mx-auto max-w-[1400px]">
-                                    <div className="mb-8 flex flex-col items-start justify-between gap-6 md:flex-row md:items-end lg:mb-12">
+                                    <div className="mb-8 flex flex-col items-start justify-between gap-6 md:flex-row md:items-center lg:mb-12">
                                         <div className="w-full md:w-auto">
                                             <h1 className="mb-2 text-3xl font-black uppercase tracking-tight text-primary lg:text-4xl">Panel de Control</h1>
                                             <p className="font-semibold text-brandText">Hola {userName}, este es el resumen de tu salud hoy.</p>
                                         </div>
-                                        <button onClick={() => setIsModalOpen(true)} className="group flex w-full md:w-auto shrink-0 items-center justify-center gap-3 rounded-2xl bg-secondary px-8 py-4 text-[12px] font-black uppercase tracking-widest text-white shadow-xl shadow-secondary/30 transition-all hover:scale-105 hover:bg-[#B38F5A]">
-                                            <span className="material-symbols-outlined text-[24px] transition-transform group-hover:rotate-12">calendar_add_on</span>
+                                        <button 
+                                            onClick={() => setIsModalOpen(true)} 
+                                            className="group flex w-full md:w-auto shrink-0 items-center justify-center gap-3 rounded-full bg-primary px-8 py-4 text-[12px] font-black uppercase tracking-widest text-white shadow-lg shadow-primary/30 transition-all duration-300 hover:-translate-y-1 hover:bg-[#002a5c] hover:text-[#C7A36E] hover:shadow-2xl hover:shadow-[#002a5c]/40"
+                                        >
+                                            <span className="material-symbols-outlined text-[24px] transition-transform duration-300 group-hover:translate-x-1">calendar_add_on</span>
                                             Solicitar Nuevo Turno
                                         </button>
                                     </div>
@@ -237,7 +244,7 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-start">
                                         <div className="w-full">
                                             {turnosFuturos.length > 0 ? (
-                                                <div className="relative overflow-hidden rounded-[2rem] bg-primary p-6 sm:p-8 text-white shadow-xl shadow-primary/20">
+                                                <div className="relative overflow-hidden rounded-[2rem] bg-primary p-6 sm:p-8 text-white shadow-xl shadow-primary/20 flex flex-col">
                                                     <div className="absolute -right-4 -top-10 opacity-[0.07]">
                                                         <span className="material-symbols-outlined text-[200px]">cardiology</span>
                                                     </div>
@@ -250,7 +257,7 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                                                         )}
                                                     </div>
                                                     <div className="mb-8 flex flex-col sm:flex-row gap-5 relative z-10">
-                                                        <div className="flex flex-col items-center justify-center bg-white rounded-2xl w-full sm:w-24 h-24 shrink-0 shadow-lg text-primary text-center overflow-hidden">
+                                                        <div className="flex flex-col items-center justify-center bg-white rounded-xl w-full sm:w-24 h-24 shrink-0 shadow-lg text-primary text-center overflow-hidden">
                                                             <span className="text-[10px] font-black uppercase tracking-widest bg-blue-50 w-full py-1.5 border-b border-gray-100 text-primary">
                                                                 {new Date(turnosFuturos[0].fecha_hora).toLocaleDateString('es-AR', { month: 'short' })}
                                                             </span>
@@ -277,7 +284,8 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div className="flex relative z-10 border-t border-white/10 pt-6">
+                                                    
+                                                    <div className="flex justify-end relative z-10 border-t border-white/10 pt-6 mt-auto">
                                                         <button 
                                                             onClick={() => handleCancelarTurno(turnosFuturos[0].id)} 
                                                             className="group flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-6 py-3 text-[11px] font-black uppercase tracking-widest text-white/70 transition-all duration-300 hover:border-red-500 hover:bg-red-500 hover:text-white hover:shadow-lg hover:shadow-red-500/30"
@@ -302,8 +310,7 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                                                     <button onClick={() => setTab('salud')} className="text-[9px] font-black uppercase tracking-widest text-secondary hover:underline">Ver todos</button>
                                                 </div>
                                                 <div className="space-y-4 flex-1">
-                                                    {/* Resultados estáticos como placeholder visual temporal */}
-                                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rounded-2xl border border-gray-50 bg-[#F8F9FA] p-4 transition-colors hover:bg-gray-50 cursor-pointer">
+                                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rounded-xl border border-gray-50 bg-[#F8F9FA] p-4 transition-colors hover:bg-gray-50 cursor-pointer">
                                                         <div className="flex items-center gap-4 min-w-0">
                                                             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
                                                                 <span className="material-symbols-outlined text-primary text-xl">radiology</span>
@@ -315,7 +322,7 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                                                         </div>
                                                         <span className="w-fit shrink-0 rounded-full bg-green-100 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-green-700">Disponible</span>
                                                     </div>
-                                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rounded-2xl border border-gray-50 bg-[#F8F9FA] p-4 transition-colors hover:bg-gray-50 cursor-pointer">
+                                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rounded-xl border border-gray-50 bg-[#F8F9FA] p-4 transition-colors hover:bg-gray-50 cursor-pointer">
                                                         <div className="flex items-center gap-4 min-w-0">
                                                             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
                                                                 <span className="material-symbols-outlined text-primary text-xl">bloodtype</span>
@@ -336,14 +343,18 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
 
                             {/* --- SECCIÓN 2: MIS TURNOS --- */}
                             {tab === 'turnos' && (
-                                <div className="mx-auto max-w-6xl">
-                                    <div className="mb-8 flex flex-col md:flex-row items-start md:items-end justify-between gap-4 border-b border-gray-100 pb-6">
-                                        <div>
+                                <div className="mx-auto max-w-[1400px]">
+                                    <div className="mb-8 flex flex-col items-start justify-between gap-6 md:flex-row md:items-center lg:mb-12">
+                                        <div className="w-full md:w-auto">
                                             <h1 className="mb-2 text-3xl font-black tracking-tight text-primary lg:text-4xl uppercase">Mis Turnos</h1>
                                             <p className="font-semibold text-brandText">Gestione sus citas médicas y revise su historial.</p>
                                         </div>
-                                        <button onClick={() => setIsModalOpen(true)} className="group flex w-full md:w-auto shrink-0 items-center justify-center gap-3 rounded-2xl bg-secondary px-8 py-4 text-[12px] font-black uppercase tracking-widest text-white shadow-xl shadow-secondary/30 transition-all hover:scale-105 hover:bg-[#B38F5A]">
-                                            <span className="material-symbols-outlined text-[24px] transition-transform group-hover:rotate-12">calendar_add_on</span>
+                                        {/* UX: Botón alineado a UI general */}
+                                        <button 
+                                            onClick={() => setIsModalOpen(true)} 
+                                            className="group flex w-full md:w-auto shrink-0 items-center justify-center gap-3 rounded-full bg-primary px-8 py-4 text-[12px] font-black uppercase tracking-widest text-white shadow-lg shadow-primary/30 transition-all duration-300 hover:-translate-y-1 hover:bg-[#002a5c] hover:text-[#C7A36E] hover:shadow-2xl hover:shadow-[#002a5c]/40"
+                                        >
+                                            <span className="material-symbols-outlined text-[24px] transition-transform duration-300 group-hover:translate-x-1">calendar_add_on</span>
                                             Solicitar Nuevo Turno
                                         </button>
                                     </div>
@@ -364,7 +375,7 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                                                 <span className="text-[10px] font-black uppercase tracking-widest text-brandText">Médico</span>
                                                 <span className="text-[10px] font-black uppercase tracking-widest text-brandText">Fecha y Hora</span>
                                                 <span className="text-[10px] font-black uppercase tracking-widest text-brandText">Sede / Lugar</span>
-                                                <span className="text-center text-[10px] font-black uppercase tracking-widest text-brandText">Acciones</span>
+                                                <span className="text-right pr-4 text-[10px] font-black uppercase tracking-widest text-brandText">Acciones</span>
                                             </div>
 
                                             {turnosFuturos.length > 0 ? (
@@ -390,7 +401,7 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                                                                 <p className="text-xs font-bold text-gray-400 uppercase tracking-tight">Sede Central</p>
                                                                 <p className="text-[10px] font-medium text-gray-400">Consultorio 04</p>
                                                             </div>
-                                                            <div className="flex justify-start lg:justify-center">
+                                                            <div className="flex justify-start lg:justify-end">
                                                                 <button 
                                                                     onClick={() => handleCancelarTurno(turno.id)} 
                                                                     className="group flex w-full lg:w-auto items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-gray-500 transition-all duration-300 hover:border-red-200 hover:bg-red-50 hover:text-red-600"
@@ -416,7 +427,7 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                                             <div className="hidden grid-cols-4 border-b border-gray-100 bg-[#F8F9FA] px-10 py-5 lg:grid">
                                                 <span className="text-[10px] font-black uppercase tracking-widest text-brandText col-span-2">Especialidad y Médico</span>
                                                 <span className="text-[10px] font-black uppercase tracking-widest text-brandText">Atención</span>
-                                                <span className="text-center text-[10px] font-black uppercase tracking-widest text-brandText">Acciones</span>
+                                                <span className="text-right pr-4 text-[10px] font-black uppercase tracking-widest text-brandText">Acciones</span>
                                             </div>
                                             {turnosPasados.length > 0 ? (
                                                 <div className="flex flex-col">
@@ -503,7 +514,7 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                                                         <span className="rounded-full bg-green-100 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-green-700">Disponible</span>
                                                     </div>
                                                     <div className="flex justify-start lg:justify-center mt-2 lg:mt-0">
-                                                        <button className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-white transition-colors hover:bg-secondary">
+                                                        <button className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-white transition-colors hover:bg-blue-900">
                                                             <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span> PDF
                                                         </button>
                                                     </div>
@@ -547,7 +558,7 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div className="mb-8 space-y-3 rounded-2xl bg-[#F8F9FA] p-5">
+                                                <div className="mb-8 space-y-3 rounded-xl bg-[#F8F9FA] p-5">
                                                     <div className="flex justify-between border-b border-gray-100 pb-2">
                                                         <span className="text-xs font-semibold text-gray-400">Indicación</span>
                                                         <span className="text-xs font-black text-primary uppercase">1 comprimido cada 12hs</span>
@@ -562,7 +573,7 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                                                     </div>
                                                 </div>
                                                 <div className="flex gap-3">
-                                                    <button className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white transition-colors hover:bg-secondary">
+                                                    <button className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white transition-colors hover:bg-blue-900">
                                                         <span className="material-symbols-outlined text-[16px]">qr_code_2</span> Ver QR
                                                     </button>
                                                     <button className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-[10px] font-black uppercase tracking-widest text-primary transition-colors hover:bg-gray-50">
@@ -680,7 +691,7 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                                                                     setNuevoTurno({ ...nuevoTurno, especialidad_id: prof.especialidad_id, especialidad: espNombre, medico_id: prof.id, medico: `${prof.apellido}, ${prof.nombre}` });
                                                                     setModalStep(3);
                                                                     setIsModalOpen(true);
-                                                                }} className="flex-1 rounded-xl bg-primary px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-white transition-colors hover:bg-secondary text-center">
+                                                                }} className="flex-1 rounded-xl bg-primary px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-white transition-colors hover:bg-blue-900 text-center">
                                                                     Sacar Turno
                                                                 </button>
                                                             </div>
@@ -702,7 +713,7 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                                             <h1 className="mb-2 text-3xl font-black tracking-tight text-primary lg:text-4xl uppercase">Mis Documentos</h1>
                                             <p className="font-semibold text-brandText">Gestión de certificados, facturación y archivos personales.</p>
                                         </div>
-                                        <button className="group flex w-full md:w-auto shrink-0 items-center justify-center gap-3 rounded-2xl bg-secondary px-8 py-4 text-[12px] font-black uppercase tracking-widest text-white shadow-xl shadow-secondary/30 transition-all hover:scale-105 hover:bg-[#B38F5A]">
+                                        <button className="group flex w-full md:w-auto shrink-0 items-center justify-center gap-3 rounded-full bg-primary px-8 py-4 text-[12px] font-black uppercase tracking-widest text-white shadow-xl shadow-primary/30 transition-all hover:scale-105 hover:bg-blue-900">
                                             <span className="material-symbols-outlined text-[24px] transition-transform group-hover:-translate-y-1">cloud_upload</span>
                                             Subir Archivo
                                         </button>
@@ -711,7 +722,8 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                                     <div className="mb-10 grid grid-cols-1 md:grid-cols-3 gap-6">
                                         <div className="group cursor-pointer rounded-[2rem] border border-gray-100 bg-[#F8F9FA] p-6 transition-all hover:border-secondary/30 hover:bg-white hover:shadow-md">
                                             <div className="mb-4 flex items-center justify-between">
-                                                <span className="material-symbols-outlined text-[40px] text-blue-200 transition-colors group-hover:text-secondary">folder</span>
+                                                {/* UX: Icono diferenciado */}
+                                                <span className="material-symbols-outlined text-[40px] text-blue-200 transition-colors group-hover:text-secondary">folder_special</span>
                                                 <span className="rounded-full bg-white px-3 py-1 text-[10px] font-black uppercase tracking-widest text-gray-400 shadow-sm">4 Archivos</span>
                                             </div>
                                             <h3 className="text-lg font-black uppercase tracking-tight text-primary">Certificados</h3>
@@ -720,7 +732,8 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                                         
                                         <div className="group cursor-pointer rounded-[2rem] border border-gray-100 bg-[#F8F9FA] p-6 transition-all hover:border-secondary/30 hover:bg-white hover:shadow-md">
                                             <div className="mb-4 flex items-center justify-between">
-                                                <span className="material-symbols-outlined text-[40px] text-blue-200 transition-colors group-hover:text-secondary">folder</span>
+                                                {/* UX: Icono diferenciado */}
+                                                <span className="material-symbols-outlined text-[40px] text-blue-200 transition-colors group-hover:text-secondary">receipt_long</span>
                                                 <span className="rounded-full bg-white px-3 py-1 text-[10px] font-black uppercase tracking-widest text-gray-400 shadow-sm">12 Archivos</span>
                                             </div>
                                             <h3 className="text-lg font-black uppercase tracking-tight text-primary">Facturación</h3>
@@ -729,7 +742,8 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                                         
                                         <div className="group cursor-pointer rounded-[2rem] border border-gray-100 bg-[#F8F9FA] p-6 transition-all hover:border-secondary/30 hover:bg-white hover:shadow-md">
                                             <div className="mb-4 flex items-center justify-between">
-                                                <span className="material-symbols-outlined text-[40px] text-blue-200 transition-colors group-hover:text-secondary">folder_shared</span>
+                                                {/* UX: Icono diferenciado */}
+                                                <span className="material-symbols-outlined text-[40px] text-blue-200 transition-colors group-hover:text-secondary">cloud_done</span>
                                                 <span className="rounded-full bg-white px-3 py-1 text-[10px] font-black uppercase tracking-widest text-gray-400 shadow-sm">2 Archivos</span>
                                             </div>
                                             <h3 className="text-lg font-black uppercase tracking-tight text-primary">Mis Subidas</h3>
@@ -841,6 +855,7 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
             </div>
 
             {/* RENDERIZADO DEL MODAL */}
+            {/* UX/UI DEV NOTE: Se removieron los comentarios // que estaban mezclados adentro del componente para evitar que el compilador explote */}
             <TurnoModal 
                 isOpen={isModalOpen} 
                 onClose={closeModal} 
@@ -848,10 +863,10 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                 setStep={setModalStep}
                 turnoData={nuevoTurno}
                 setTurnoData={setNuevoTurno}
-                especialidadesDb={especialidades_db} // 1. Pasamos base de datos real
-                medicosDb={medicos_db}               // 2. Pasamos base de datos real
-                user={auth?.user}                    // 3. Pasamos usuario real
-                setToast={setToast}                  // 4. Pasamos función para notificación
+                especialidadesDb={especialidades_db}
+                medicosDb={medicos_db}
+                user={auth?.user}
+                setToast={setToast}
             />
 
             {/* NOTIFICACIÓN FLOTANTE (TOAST) */}
@@ -884,7 +899,6 @@ function NewsCards() {
     );
 }
 
-// 4. Actualizamos Props del Modal para recibir la Data y Mostrar Notificación
 function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, especialidadesDb, medicosDb, user, setToast }) {
     const [searchEspecialidad, setSearchEspecialidad] = useState('');
 
@@ -898,7 +912,6 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
         esp.nombre.toLowerCase().includes(searchEspecialidad.toLowerCase())
     );
 
-    // Funciones de validación para habilitar el botón "Continuar"
     const canContinue = () => {
         if (step === 1) return turnoData.especialidad_id !== null;
         if (step === 2) return turnoData.medico_id !== null;
@@ -948,8 +961,8 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                                     type="text" 
                                     value={searchEspecialidad}
                                     onChange={(e) => setSearchEspecialidad(e.target.value)}
-                                    placeholder="Buscar especialidad..." 
-                                    className="w-full rounded-2xl border-2 border-gray-100 bg-[#F8F9FA] py-4 pl-16 pr-6 text-base font-bold text-primary transition-all placeholder:text-gray-400 focus:border-secondary focus:bg-white focus:outline-none focus:ring-4 focus:ring-secondary/10" 
+                                    placeholder="Escriba la especialidad o síntoma (ej. Cardiología)..." 
+                                    className="w-full rounded-xl border-2 border-gray-100 bg-[#F8F9FA] py-4 pl-16 pr-6 text-base font-bold text-primary transition-all placeholder:text-gray-400 focus:border-secondary focus:bg-white focus:outline-none focus:ring-4 focus:ring-secondary/10" 
                                 />
                             </div>
                             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
@@ -958,7 +971,7 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                                         <button 
                                             key={esp.id}
                                             onClick={() => setTurnoData({ ...turnoData, especialidad_id: esp.id, especialidad: esp.nombre, medico_id: null, medico: null })}
-                                            className={`group flex flex-col items-start justify-center rounded-2xl border-2 p-5 text-left transition-all hover:-translate-y-1 ${
+                                            className={`group flex flex-col items-start justify-center rounded-xl border-2 p-5 text-left transition-all hover:-translate-y-1 ${
                                                 turnoData.especialidad_id === esp.id 
                                                 ? 'border-secondary bg-blue-50/50 shadow-md' 
                                                 : 'border-transparent border-gray-100 bg-white hover:border-secondary/30'
@@ -1006,7 +1019,7 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                                             key={prof.id}
                                             disabled={prof.turnos_disponibles === 0}
                                             onClick={() => setTurnoData({ ...turnoData, medico_id: prof.id, medico: `${prof.apellido}, ${prof.nombre}` })}
-                                            className={`flex items-center gap-5 rounded-2xl border-2 p-5 text-left transition-all ${
+                                            className={`flex items-center gap-5 rounded-xl border-2 p-5 text-left transition-all ${
                                                 prof.turnos_disponibles === 0 
                                                 ? 'border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed' 
                                                 : turnoData.medico_id === prof.id
@@ -1030,7 +1043,7 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                                         </button>
                                     ))
                                 ) : (
-                                    <div className="col-span-1 md:col-span-2 text-center p-8 bg-gray-50 rounded-2xl border border-gray-100">
+                                    <div className="col-span-1 md:col-span-2 text-center p-8 bg-gray-50 rounded-xl border border-gray-100">
                                         <p className="text-gray-500 font-semibold">No hay médicos cargados para esta especialidad todavía.</p>
                                     </div>
                                 )}
@@ -1041,7 +1054,7 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                     {/* PASO 3: FECHA Y HORA */}
                     {step === 3 && (
                         <div className="animate-fade-in w-full max-w-5xl mx-auto">
-                            <div className="mb-8 rounded-2xl bg-[#F8F9FA] border border-gray-100 p-5 flex flex-wrap items-center justify-between gap-4">
+                            <div className="mb-8 rounded-xl bg-[#F8F9FA] border border-gray-100 p-5 flex flex-wrap items-center justify-between gap-4">
                                 <div>
                                     <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Resumen parcial</p>
                                     <p className="text-sm font-black text-primary uppercase mt-1">
@@ -1051,7 +1064,7 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                             </div>
 
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                                {/* Lado Izquierdo: Selección de Fecha */}
+                                {/* UX/UI DEV NOTE: ADVERTENCIA TÉCNICA - Actualmente los días de abajo están hardcodeados a un array estático [14, 15...]. En producción, esto debe traerse del backend para mostrar solo disponibilidad real del médico. */}
                                 <div>
                                     <h3 className="mb-6 flex items-center gap-2 text-lg font-black uppercase tracking-tight text-primary">
                                         <span className="material-symbols-outlined text-secondary text-[24px]">calendar_month</span>
@@ -1064,7 +1077,7 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                                                 <button 
                                                     key={dia}
                                                     onClick={() => setTurnoData({ ...turnoData, fecha: `${dia} de Mayo`, hora: null })}
-                                                    className={`flex flex-col items-center justify-center rounded-2xl py-3 transition-all ${
+                                                    className={`flex flex-col items-center justify-center rounded-xl py-3 transition-all ${
                                                         turnoData.fecha === `${dia} de Mayo`
                                                         ? 'bg-primary text-white shadow-md'
                                                         : 'bg-[#F8F9FA] text-primary hover:bg-secondary/10 hover:text-secondary'
@@ -1078,7 +1091,6 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                                     </div>
                                 </div>
 
-                                {/* Lado Derecho: Selección de Hora */}
                                 <div className={`transition-opacity duration-300 ${!turnoData.fecha ? 'opacity-30 pointer-events-none' : 'opacity-100'}`}>
                                     <h3 className="mb-6 flex items-center gap-2 text-lg font-black uppercase tracking-tight text-primary">
                                         <span className="material-symbols-outlined text-secondary text-[24px]">schedule</span>
@@ -1129,7 +1141,6 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                     {/* PASO 4: CONFIRMACIÓN */}
                     {step === 4 && (
                         <div className="animate-fade-in mx-auto w-full max-w-4xl py-2">
-                            
                             <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 rounded-2xl border-2 border-red-100 bg-red-50 p-5 text-left shadow-sm max-w-3xl mx-auto">
                                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-500">
                                     <span className="material-symbols-outlined text-[28px]">warning</span>
@@ -1144,8 +1155,6 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                             <h3 className="font-black text-2xl uppercase text-primary tracking-tight mb-8 text-center">Resumen del Turno</h3>
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 mb-10 text-left">
-                                
-                                {/* Detalles de la Cita */}
                                 <div className="rounded-[24px] border border-gray-200 bg-white p-6 lg:p-8 shadow-sm transition-all hover:shadow-md flex flex-col">
                                     <div className="mb-6 flex items-center gap-3 border-b border-gray-100 pb-4">
                                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary/10 text-secondary">
@@ -1153,7 +1162,7 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                                         </div>
                                         <h4 className="text-sm font-black uppercase tracking-widest text-primary">Detalles de la Cita</h4>
                                     </div>
-                                    <div className="mb-6 rounded-2xl bg-[#F8F9FA] p-4 border border-gray-100 flex items-center gap-5">
+                                    <div className="mb-6 rounded-xl bg-[#F8F9FA] p-4 border border-gray-100 flex items-center gap-5">
                                         <div className="flex flex-col items-center justify-center border-r border-gray-200 pr-5 min-w-[80px]">
                                             <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-0.5">Día</span>
                                             <span className="text-2xl font-black text-secondary leading-none">
@@ -1181,7 +1190,6 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                                     </div>
                                 </div>
 
-                                {/* Datos del Paciente Dinámicos */}
                                 <div className="rounded-[24px] border border-gray-200 bg-white p-6 lg:p-8 shadow-sm transition-all hover:shadow-md flex flex-col">
                                     <div className="mb-6 flex items-center gap-3 border-b border-gray-100 pb-4">
                                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 text-primary">
@@ -1228,22 +1236,21 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                     )}
                 </div>
 
-                {/* Footer del Modal: Botones de Navegación "Volver" y "Continuar" */}
                 <div className="shrink-0 border-t border-gray-100 bg-white px-8 py-5 flex items-center justify-between">
                     {step > 1 ? (
-                        <button onClick={() => setStep(step - 1)} className="flex items-center gap-2 rounded-xl border border-gray-200 px-6 py-3 text-xs font-black uppercase tracking-widest text-gray-500 transition-colors hover:bg-gray-50">
+                        <button onClick={() => setStep(step - 1)} className="flex items-center gap-2 rounded-full border border-gray-200 px-6 py-3 text-xs font-black uppercase tracking-widest text-gray-500 transition-colors hover:bg-gray-50">
                             <span className="material-symbols-outlined text-[18px]">arrow_back</span> Volver
                         </button>
                     ) : (
-                        <div></div> // Spacer para mantener el botón de continuar a la derecha
+                        <div></div>
                     )}
 
                     {step < 4 ? (
                         <button 
                             disabled={!canContinue()} 
                             onClick={() => setStep(step + 1)} 
-                            className={`flex items-center gap-2 rounded-xl px-8 py-3 text-xs font-black uppercase tracking-widest text-white transition-all ${
-                                canContinue() ? 'bg-secondary hover:bg-[#B38F5A] shadow-lg shadow-secondary/30' : 'bg-gray-300 cursor-not-allowed'
+                            className={`flex items-center gap-2 rounded-full px-8 py-3 text-xs font-black uppercase tracking-widest text-white transition-all duration-300 ${
+                                canContinue() ? 'bg-primary hover:bg-[#002a5c] shadow-lg shadow-primary/30' : 'bg-gray-300 cursor-not-allowed'
                             }`}
                         >
                             Continuar <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
@@ -1255,11 +1262,11 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                                     preserveScroll: true,
                                     onSuccess: () => {
                                         onClose(); 
-                                        setToast('¡Turno confirmado con éxito!'); // Lanzamos el Toast
+                                        setToast('¡Turno confirmado con éxito!');
                                     }
                                 });
                             }} 
-                            className="flex items-center gap-2 rounded-xl bg-green-500 px-8 py-3 text-xs font-black uppercase tracking-widest text-white transition-all hover:bg-green-600 shadow-lg shadow-green-500/30"
+                            className="flex items-center gap-2 rounded-full bg-emerald-500 px-8 py-3 text-xs font-black uppercase tracking-widest text-white transition-all hover:bg-emerald-600 shadow-lg shadow-emerald-500/30"
                         >
                             <span className="material-symbols-outlined text-[18px]">check_circle</span> Confirmar Turno
                         </button>
