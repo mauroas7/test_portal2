@@ -44,4 +44,26 @@ class TurnoController extends Controller
         // 4. Redireccionamos de vuelta al Dashboard (Inertia recargará los datos automáticamente)
         return redirect()->route('dashboard')->with('success', '¡Tu turno fue confirmado con éxito!');
     }
+
+    /**
+     * Eliminar (cancelar) un turno específico.
+     */
+    public function destroy($id)
+    {
+        // 1. Buscamos el turno en la base de datos
+        $turno = \App\Models\Turno::findOrFail($id);
+
+        // 2. SEGURIDAD: Verificamos que el turno pertenezca al usuario logueado
+        // (Asumiendo que tu tabla de turnos tiene un campo 'user_id' o 'paciente_id')
+        if ($turno->user_id !== auth()->id()) {
+            abort(403, 'No tienes permiso para cancelar este turno.');
+        }
+
+        // 3. Eliminamos el turno
+        $turno->delete();
+
+        // 4. Retornamos a la misma página. 
+        // Inertia recargará los datos de React automáticamente (sin recargar el navegador).
+        return back()->with('success', 'Turno cancelado correctamente.');
+    }
 }
