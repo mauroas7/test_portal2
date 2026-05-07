@@ -33,7 +33,7 @@ export default function Login() {
                     
                     <div className="relative z-10">
                         <div className="mb-3 h-1 w-8 rounded-full bg-secondary"></div>
-                        <p className="text-[10px] font-black text-blue-100/50 uppercase tracking-[0.2em]">Registro de Paciente</p>
+                        <p className="text-[10px] font-black text-blue-100/50 uppercase tracking-[0.2em]">Ingreso de Paciente</p>
                     </div>
                 </div>
 

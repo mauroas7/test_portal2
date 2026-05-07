@@ -1,18 +1,11 @@
-export default function SeccionInicio({ userName, turnosFuturos, setIsModalOpen, handleCancelarTurno, setTab }) {
+// resources/js/Components/Dashboard/SeccionInicio.jsx
+
+export default function SeccionInicio({ userName, turnosFuturos }) {
     return (
         <div className="w-full animate-fade-in">
-            <div className="mb-8 flex flex-col items-start justify-between gap-6 md:flex-row md:items-center lg:mb-12">
-                <div className="w-full md:w-auto">
-                    <h1 className="mb-2 text-3xl font-black uppercase tracking-tight text-primary lg:text-4xl">Panel de Control</h1>
-                    <p className="font-semibold text-brandText">Hola {userName}, este es el resumen de tu salud hoy.</p>
-                </div>
-                <button 
-                    onClick={() => setIsModalOpen(true)} 
-                    className="group flex w-full md:w-auto shrink-0 items-center justify-center gap-3 rounded-full bg-primary px-8 py-4 text-[12px] font-black uppercase tracking-widest text-white shadow-lg shadow-primary/30 transition-[background-color,color,shadow,transform] duration-300 hover:-translate-y-1 hover:bg-[#00284A] hover:text-[#C7A36E] hover:shadow-2xl hover:shadow-[#00284A]/40"
-                >
-                    <span className="material-symbols-outlined text-[24px] transition-transform duration-300 group-hover:translate-x-1">calendar_add_on</span>
-                    Solicitar Nuevo Turno
-                </button>
+            <div className="mb-8 border-b border-gray-100 pb-6">
+                <h1 className="mb-2 text-3xl font-black uppercase tracking-tight text-primary lg:text-4xl">Panel de Control</h1>
+                <p className="font-semibold text-brandText">Hola {userName}, este es el resumen de tu salud hoy.</p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-start">
@@ -61,10 +54,7 @@ export default function SeccionInicio({ userName, turnosFuturos, setIsModalOpen,
                             </div>
                             
                             <div className="flex justify-end relative z-10 border-t border-white/10 pt-6 mt-auto">
-                                <button 
-                                    onClick={() => handleCancelarTurno(turnosFuturos[0].id)} 
-                                    className="group flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-6 py-3 text-[11px] font-black uppercase tracking-widest text-white/70 transition-[background-color,border-color,color,shadow] duration-300 hover:border-red-500 hover:bg-red-500 hover:text-white hover:shadow-lg hover:shadow-red-500/30"
-                                >
+                                <button className="group flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-6 py-3 text-[11px] font-black uppercase tracking-widest text-white/70 transition-[background-color,border-color,color,shadow] duration-300 hover:border-red-500 hover:bg-red-500 hover:text-white hover:shadow-lg hover:shadow-red-500/30">
                                     <span className="material-symbols-outlined text-[18px] transition-transform duration-300 group-hover:scale-110">event_busy</span> 
                                     Cancelar Turno
                                 </button>
@@ -84,7 +74,7 @@ export default function SeccionInicio({ userName, turnosFuturos, setIsModalOpen,
                     <div className="rounded-[2rem] bg-white p-6 sm:p-8 shadow-sm h-full flex flex-col border border-gray-100">
                         <div className="mb-6 flex items-center justify-between">
                             <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Últimos Resultados</h2>
-                            <button onClick={() => setTab('salud')} className="text-[9px] font-black uppercase tracking-widest text-secondary hover:underline transition-colors">Ver todos</button>
+                            <button className="text-[9px] font-black uppercase tracking-widest text-secondary hover:underline transition-colors">Ver todos</button>
                         </div>
                         <div className="space-y-4 flex-1">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rounded-2xl border border-gray-100 bg-white shadow-sm p-4 transition-[border-color,shadow] hover:border-secondary/30 hover:shadow-md cursor-pointer">

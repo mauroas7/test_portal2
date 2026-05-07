@@ -1,12 +1,13 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Head, useForm, router } from '@inertiajs/react';
 
-// Importamos nuestros nuevos componentes modulares subiendo un nivel (../)
+// Importamos nuestros componentes modulares
 import SeccionInicio from '@/Components/Dashboard/SeccionInicio.jsx';
 import SeccionTurnos from '@/Components/Dashboard/SeccionTurnos.jsx';
 import SeccionSalud from '@/Components/Dashboard/SeccionSalud.jsx';
 import SeccionCartilla from '@/Components/Dashboard/SeccionCartilla.jsx';
-import SeccionDocumentos from '@/Components/Dashboard/SeccionDocumentos.jsx';
+import SeccionBiblioteca from '@/Components/Dashboard/SeccionBiblioteca.jsx';
+
 export default function Dashboard({ auth, turnos = [], especialidades_db = [], medicos_db = [] }) {
     const [tab, setTab] = useState('inicio');
     
@@ -52,7 +53,7 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
         { id: 'turnos', label: 'Turnos', icon: 'calendar_month' },
         { id: 'salud', label: 'Salud', icon: 'monitor_heart' },
         { id: 'cartilla', label: 'Cartilla Médica', icon: 'medical_services' },
-        { id: 'documentos', label: 'Documentos', icon: 'folder_open' },
+        { id: 'biblioteca', label: 'Biblioteca', icon: 'folder_open' },
     ];
 
     const handleTabChange = (item) => {
@@ -142,16 +143,29 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
 
     return (
         <div className="min-h-screen bg-primary p-3 font-sans antialiased lg:p-4 relative">
-            <Head title="Home | Hospital Universitario" />
+            <Head title="Inicio | Hospital Universitario" />
 
             <div className="mx-auto flex flex-col min-h-[calc(100vh-1.5rem)] w-full max-w-[1900px] overflow-hidden rounded-[2rem] bg-white shadow-2xl lg:min-h-[calc(100vh-2rem)]">
                 
                 <div className="flex flex-1 w-full min-h-[calc(100vh-1.5rem)] lg:min-h-[calc(100vh-2rem)]">
                     
+                    {/* SIDEBAR IZQUIERDO: Con el botón global */}
                     <aside className="hidden w-72 shrink-0 flex-col border-r border-gray-100 bg-white p-8 lg:flex relative z-20 shadow-[4px_0_24px_-10px_rgba(0,0,0,0.05)]">
                         <div className="mb-12 flex justify-center px-2">
-                            <img src="/img/Logo HU Uso Diario.svg" alt="Hospital Universitario" className="h-auto w-44" />
+                            <img src="/img/Logo HU Uso Diario.svg" alt="Hospital Universitario" className="h-auto w-full" />
                         </div>
+
+                        {/* --- BOTÓN GLOBAL: NUEVO TURNO --- */}
+                        <div className="mb-10 pr-2">
+                            <button 
+                                onClick={() => { setModalStep(1); setIsModalOpen(true); }} 
+                                className="group flex w-full items-center justify-center gap-3 rounded-2xl bg-primary px-4 py-4 text-[12px] font-black uppercase tracking-widest text-white shadow-lg shadow-primary/30 transition-[background-color,color,shadow,transform] duration-300 hover:-translate-y-1 hover:bg-[#00284A] hover:text-[#C7A36E] hover:shadow-2xl hover:shadow-[#00284A]/40"
+                            >
+                                <span className="material-symbols-outlined text-[24px] transition-transform duration-300 group-hover:scale-110">calendar_add_on</span>
+                                Nuevo Turno
+                            </button>
+                        </div>
+
                         <div className="flex-1 pr-2">
                             <p className="mb-6 px-4 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Menú Principal</p>
                             {renderNavigation()}
@@ -261,12 +275,11 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
 
                         <div className="flex flex-1 relative">
                             <main className="flex-1 p-5 lg:p-12 w-full">
-                                {/* RENDERIZADO MODULAR DE LAS PESTAÑAS */}
-                                {tab === 'inicio' && <SeccionInicio userName={userName} turnosFuturos={turnosFuturos} setIsModalOpen={setIsModalOpen} handleCancelarTurno={handleCancelarTurno} setTab={setTab} />}
-                                {tab === 'turnos' && <SeccionTurnos turnosFuturos={turnosFuturos} turnosPasados={turnosPasados} setIsModalOpen={setIsModalOpen} handleCancelarTurno={handleCancelarTurno} />}
+                                {tab === 'inicio' && <SeccionInicio userName={userName} turnosFuturos={turnosFuturos} handleCancelarTurno={handleCancelarTurno} setTab={setTab} />}
+                                {tab === 'turnos' && <SeccionTurnos turnosFuturos={turnosFuturos} turnosPasados={turnosPasados} handleCancelarTurno={handleCancelarTurno} />}
                                 {tab === 'salud' && <SeccionSalud />}
                                 {tab === 'cartilla' && <SeccionCartilla especialidadesDb={especialidades_db} medicosDb={medicos_db} setIsModalOpen={setIsModalOpen} setNuevoTurno={setNuevoTurno} nuevoTurno={nuevoTurno} setModalStep={setModalStep} />}
-                                {tab === 'documentos' && <SeccionDocumentos />}
+                                {tab === 'biblioteca' && <SeccionBiblioteca />}
                             </main> 
 
                             {tab === 'inicio' && (
@@ -310,7 +323,6 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
     );
 }
 
-// Por ahora mantenemos estos sub-componentes acá abajo para no crear demasiados archivos a la vez.
 function NewsCards() {
     return (
         <div className="space-y-4">

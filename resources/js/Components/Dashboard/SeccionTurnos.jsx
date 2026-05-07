@@ -1,23 +1,15 @@
+// resources/js/Components/Dashboard/SeccionTurnos.jsx
+
 import { useState } from 'react';
 
-export default function SeccionTurnos({ turnosFuturos, turnosPasados, setIsModalOpen, handleCancelarTurno }) {
-    // Encapsulamos el estado acá adentro para mejorar rendimiento
+export default function SeccionTurnos({ turnosFuturos, turnosPasados, handleCancelarTurno }) {
     const [subTabTurnos, setSubTabTurnos] = useState('proximos'); 
 
     return (
         <div className="w-full animate-fade-in">
-            <div className="mb-8 flex flex-col items-start justify-between gap-6 md:flex-row md:items-center lg:mb-12">
-                <div className="w-full md:w-auto">
-                    <h1 className="mb-2 text-3xl font-black tracking-tight text-primary lg:text-4xl uppercase">Mis Turnos</h1>
-                    <p className="font-semibold text-brandText">Gestione sus citas médicas y revise su historial.</p>
-                </div>
-                <button 
-                    onClick={() => setIsModalOpen(true)} 
-                    className="group flex w-full md:w-auto shrink-0 items-center justify-center gap-3 rounded-full bg-primary px-8 py-4 text-[12px] font-black uppercase tracking-widest text-white shadow-lg shadow-primary/30 transition-[background-color,color,shadow,transform] duration-300 hover:-translate-y-1 hover:bg-[#00284A] hover:text-[#C7A36E] hover:shadow-2xl hover:shadow-[#00284A]/40"
-                >
-                    <span className="material-symbols-outlined text-[24px] transition-transform duration-300 group-hover:translate-x-1">calendar_add_on</span>
-                    Solicitar Nuevo Turno
-                </button>
+            <div className="mb-8 border-b border-gray-100 pb-6">
+                <h1 className="mb-2 text-3xl font-black tracking-tight text-primary lg:text-4xl uppercase">Mis Turnos</h1>
+                <p className="font-semibold text-brandText">Gestione sus citas médicas y revise su historial.</p>
             </div>
 
             <div className="mb-8 flex p-1.5 bg-white shadow-sm w-fit rounded-xl border border-gray-100">
@@ -76,7 +68,7 @@ export default function SeccionTurnos({ turnosFuturos, turnosPasados, setIsModal
                         </div>
                     ) : (
                         <div className="flex min-h-[300px] flex-col items-center justify-center p-8 text-center">
-                            <img src="/img/medical-care.svg" alt="Vacío" className="mb-6 w-48 opacity-90" />
+                            <span className="material-symbols-outlined text-5xl text-gray-300 mb-4">event_available</span>
                             <h3 className="text-xl font-black tracking-tight text-primary uppercase">No tenés turnos programados</h3>
                         </div>
                     )}
