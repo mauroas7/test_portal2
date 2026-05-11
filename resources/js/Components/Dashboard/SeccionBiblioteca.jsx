@@ -2,7 +2,6 @@ import { useState } from 'react';
 
 export default function SeccionDocumentos() {
     // ESTADO MOCK: Simulamos la base de datos de documentos recibidos
-    // En el futuro, esto vendrá como 'documentosDb' desde Laravel
     const [documentos] = useState([
         { 
             id: 1, 
@@ -63,7 +62,7 @@ export default function SeccionDocumentos() {
                 <p className="font-semibold text-brandText">Documentos, indicaciones y material que tus médicos y/o consultorios han compartido contigo.</p>
             </div>
 
-            {/* TABLA DE DOCUMENTOS (Modern Data Grid) */}
+            {/* TABLA DE DOCUMENTOS */}
             <div className="overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-sm">
                 
                 {/* Encabezados de Tabla (Ocultos en celular, visibles en desktop) */}
@@ -80,7 +79,7 @@ export default function SeccionDocumentos() {
                         documentos.map((doc) => (
                             <div key={doc.id} className="grid grid-cols-1 items-center gap-4 border-b border-gray-50 px-6 py-5 transition-colors hover:bg-[#F4F7F9] md:grid-cols-12 md:px-8">
                                 
-                                {/* Columna 1: Título e Ícono (Ocupa 5 lugares en desktop) */}
+                                {/* Columna 1: Título e Ícono */}
                                 <div className="col-span-5 flex items-center gap-4 min-w-0">
                                     <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl shadow-inner ${doc.tipo === 'pdf' ? 'bg-red-50' : doc.tipo === 'video' ? 'bg-blue-50' : 'bg-gray-50'}`}>
                                         {renderIcono(doc.tipo)}

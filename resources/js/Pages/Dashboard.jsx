@@ -1,7 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Head, useForm, router } from '@inertiajs/react';
+import { Head, useForm, router, Link } from '@inertiajs/react';
 
-// Importamos nuestros componentes modulares
 import SeccionInicio from '@/Components/Dashboard/SeccionInicio.jsx';
 import SeccionTurnos from '@/Components/Dashboard/SeccionTurnos.jsx';
 import SeccionSalud from '@/Components/Dashboard/SeccionSalud.jsx';
@@ -11,7 +10,7 @@ import SeccionBiblioteca from '@/Components/Dashboard/SeccionBiblioteca.jsx';
 export default function Dashboard({ auth, turnos = [], especialidades_db = [], medicos_db = [] }) {
     const [tab, setTab] = useState('inicio');
     
-    // --- ESTADOS DEL BUSCADOR OPTIMIZADO ---
+    // --- ESTADOS DEL BUSCADOR ---
     const [globalSearchInput, setGlobalSearchInput] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     
@@ -90,14 +89,41 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
 
     const renderProfileMenu = (align = 'right-0', margin = 'top-14') => (
         profileOpen && (
-            <div className={`absolute ${margin} ${align} z-50 w-56 rounded-2xl border border-gray-100 bg-white py-2 shadow-2xl animate-fade-in`}>
-                <a href="#" className="flex items-center gap-3 px-5 py-3 text-sm font-bold text-brandText transition-colors hover:bg-[#F8F9FA]">
-                    <span className="material-symbols-outlined text-secondary">person</span> Mi Perfil
-                </a>
-                <hr className="my-2 border-gray-50" />
+            <div className={`absolute ${margin} ${align} z-50 w-64 rounded-2xl border border-gray-100 bg-white py-2 shadow-2xl animate-fade-in`}>
+                
+                {/* BLOQUE 1: Gestión del Paciente */}
+                <div className="flex flex-col">
+                    <Link href={route('profile.edit')} className="flex items-center gap-3 px-5 py-3 text-sm font-bold text-brandText transition-colors hover:bg-[#F8F9FA] hover:text-primary">
+                        <span className="material-symbols-outlined text-secondary text-[20px]">person</span> Mi Perfil
+                    </Link>
+                    
+                    {/* Botones de ejemplo */}
+                    <button className="flex w-full items-center gap-3 px-5 py-3 text-sm font-bold text-brandText transition-colors hover:bg-[#F8F9FA] hover:text-primary text-left">
+                        <span className="material-symbols-outlined text-secondary text-[20px]">family_restroom</span> Mi Grupo Familiar
+                    </button>
+                    <button className="flex w-full items-center gap-3 px-5 py-3 text-sm font-bold text-brandText transition-colors hover:bg-[#F8F9FA] hover:text-primary text-left">
+                        <span className="material-symbols-outlined text-secondary text-[20px]">medical_information</span> Cobertura Médica
+                    </button>
+                </div>
+
+                <hr className="my-1 border-gray-50" />
+
+                {/* BLOQUE 2: Sistema y Soporte */}
+                <div className="flex flex-col">
+                    <button className="flex w-full items-center gap-3 px-5 py-3 text-sm font-bold text-brandText transition-colors hover:bg-[#F8F9FA] hover:text-primary text-left">
+                        <span className="material-symbols-outlined text-gray-400 text-[20px]">lock</span> Seguridad
+                    </button>
+                    <button className="flex w-full items-center gap-3 px-5 py-3 text-sm font-bold text-brandText transition-colors hover:bg-[#F8F9FA] hover:text-primary text-left">
+                        <span className="material-symbols-outlined text-gray-400 text-[20px]">help</span> Ayuda y Soporte
+                    </button>
+                </div>
+
+                <hr className="my-1 border-gray-50" />
+
+                {/* BLOQUE 3: Cerrar Sesión */}
                 <form onSubmit={handleLogout}>
                     <button type="submit" className="flex w-full items-center gap-3 px-5 py-3 text-sm font-black uppercase tracking-wider text-red-500 transition-colors hover:bg-red-50">
-                        <span className="material-symbols-outlined">logout</span> Cerrar sesión
+                        <span className="material-symbols-outlined text-[20px]">logout</span> Cerrar sesión
                     </button>
                 </form>
             </div>
@@ -397,7 +423,7 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                                     type="text" 
                                     value={searchEspecialidad}
                                     onChange={(e) => setSearchEspecialidad(e.target.value)}
-                                    placeholder="Escriba la especialidad o síntoma (ej. Cardiología)..." 
+                                    placeholder="Escriba la especialidad..." 
                                     className="w-full rounded-2xl border-2 border-gray-100 bg-[#F4F7F9] py-4 pl-16 pr-6 text-base font-bold text-primary transition-colors placeholder:text-gray-400 focus:border-secondary/50 focus:bg-white focus:outline-none shadow-inner" 
                                 />
                             </div>
@@ -498,32 +524,20 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                             </div>
 
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                                {/* COLUMNA IZQUIERDA: CALENDARIO */}
                                 <div>
                                     <h3 className="mb-6 flex items-center gap-2 text-lg font-black uppercase tracking-tight text-primary">
                                         <span className="material-symbols-outlined text-secondary text-[24px]">calendar_month</span>
                                         1. Elija el día
                                     </h3>
-                                    <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
-                                        <p className="text-center text-sm font-semibold text-gray-400 mb-4">Mayo 2026</p>
-                                        <div className="grid grid-cols-5 gap-3">
-                                            {[14, 15, 18, 19, 20, 21, 22].map((dia) => (
-                                                <button 
-                                                    key={dia}
-                                                    onClick={() => setTurnoData({ ...turnoData, fecha: `${dia} de Mayo`, hora: null })}
-                                                    className={`flex flex-col items-center justify-center rounded-xl py-3 transition-colors ${
-                                                        turnoData.fecha === `${dia} de Mayo`
-                                                        ? 'bg-primary text-white shadow-md'
-                                                        : 'bg-[#F4F7F9] text-primary hover:bg-secondary/10 hover:text-secondary shadow-inner'
-                                                    }`}
-                                                >
-                                                    <span className="text-[10px] font-bold uppercase tracking-widest opacity-80 mb-1">May</span>
-                                                    <span className="text-xl font-black leading-none">{dia}</span>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
+                                    
+                                    <Calendario 
+                                        fechaSeleccionada={turnoData.fecha}
+                                        alSeleccionarFecha={(f) => setTurnoData({ ...turnoData, fecha: f, hora: null })}
+                                    />
                                 </div>
 
+                                {/* COLUMNA DERECHA: HORARIOS */}
                                 <div className={`transition-opacity duration-300 ${!turnoData.fecha ? 'opacity-30 pointer-events-none' : 'opacity-100'}`}>
                                     <h3 className="mb-6 flex items-center gap-2 text-lg font-black uppercase tracking-tight text-primary">
                                         <span className="material-symbols-outlined text-secondary text-[24px]">schedule</span>
@@ -532,7 +546,7 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                                     
                                     {!turnoData.fecha ? (
                                         <div className="flex h-40 items-center justify-center rounded-[2rem] border border-dashed border-gray-200 bg-[#F4F7F9]">
-                                            <p className="text-sm font-semibold text-gray-400">Seleccione un día primero</p>
+                                            <p className="text-sm font-semibold text-gray-400">Seleccione un día en el calendario primero</p>
                                         </div>
                                     ) : (
                                         <div className="space-y-6">
@@ -704,6 +718,106 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                         </button>
                     )}
                 </div>
+            </div>
+        </div>
+    );
+}
+
+// Componente de Calendario
+function Calendario({ fechaSeleccionada, alSeleccionarFecha }) {
+    const [viewDate, setViewDate] = useState(new Date()); // Fecha para controlar qué mes vemos
+    
+    const diasSemana = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
+    const meses = [
+        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    ];
+
+    const año = viewDate.getFullYear();
+    const mes = viewDate.getMonth();
+
+    // Lógica para calcular la grilla
+    const primerDiaMes = new Date(año, mes, 1).getDay();
+    const diasEnMes = new Date(año, mes + 1, 0).getDate();
+    
+    // Simulación de días disponibles (Esto tendría que venir de la API)
+    const diasDisponibles = [14, 15, 18, 19, 20, 21, 22, 28, 29];
+
+    const cambiarMes = (offset) => {
+        setViewDate(new Date(año, mes + offset, 1));
+    };
+
+    const esHoy = (dia) => {
+        const hoy = new Date();
+        return hoy.getDate() === dia && hoy.getMonth() === mes && hoy.getFullYear() === año;
+    };
+
+    const esSeleccionado = (dia) => {
+        if (!fechaSeleccionada) return false;
+        // Comparamos string para simplicidad en este paso
+        const fechaComp = `${dia} de ${meses[mes]}`;
+        return fechaSeleccionada === fechaComp;
+    };
+
+    return (
+        <div className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
+            {/* Header del Calendario */}
+            <div className="flex items-center justify-between mb-6">
+                <button onClick={() => cambiarMes(-1)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                    <span className="material-symbols-outlined text-primary">chevron_left</span>
+                </button>
+                <h4 className="font-black text-primary uppercase tracking-widest text-sm">
+                    {meses[mes]} {año}
+                </h4>
+                <button onClick={() => cambiarMes(1)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                    <span className="material-symbols-outlined text-primary">chevron_right</span>
+                </button>
+            </div>
+
+            {/* Header de Días */}
+            <div className="grid grid-cols-7 gap-1 mb-2">
+                {diasSemana.map(d => (
+                    <div key={d} className="text-[10px] font-black text-gray-400 uppercase text-center py-2">
+                        {d}
+                    </div>
+                ))}
+            </div>
+
+            {/* Grilla de Días */}
+            <div className="grid grid-cols-7 gap-2">
+                {/* Espacios vacíos para el inicio del mes */}
+                {[...Array(primerDiaMes)].map((_, i) => (
+                    <div key={`empty-${i}`} />
+                ))}
+
+                {/* Días del mes */}
+                {[...Array(diasEnMes)].map((_, i) => {
+                    const dia = i + 1;
+                    const disponible = diasDisponibles.includes(dia);
+                    const seleccionado = esSeleccionado(dia);
+
+                    return (
+                        <button
+                            key={dia}
+                            disabled={!disponible}
+                            onClick={() => alSeleccionarFecha(`${dia} de ${meses[mes]}`)}
+                            className={`
+                                relative flex h-10 w-full items-center justify-center rounded-xl text-sm font-bold transition-all
+                                ${seleccionado 
+                                    ? 'bg-primary text-white shadow-md scale-105' 
+                                    : disponible 
+                                        ? 'bg-[#F4F7F9] text-primary hover:bg-secondary/20 hover:text-secondary' 
+                                        : 'text-gray-300 cursor-not-allowed opacity-40'}
+                                ${esHoy(dia) && !seleccionado ? 'border-2 border-secondary/30' : ''}
+                            `}
+                        >
+                            {dia}
+                            {disponible && !seleccionado && (
+                                <span className="absolute bottom-1.5 h-1 w-1 rounded-full bg-secondary"></span>
+                            )}
+                        </button>
+                    );
+                })}
             </div>
         </div>
     );

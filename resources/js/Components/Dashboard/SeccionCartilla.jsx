@@ -94,7 +94,7 @@ export default function SeccionCartilla({ especialidadesDb, medicosDb, setIsModa
                     ))}
                 </div>
 
-                {/* --- RENDERIZADO DE TABS (Igual que antes) --- */}
+                {/* --- RENDERIZADO DE TABS --- */}
                 {subTabCartilla === 'especialidades' && (
                     <div className="animate-fade-in">
                         {!especialidadActiva ? (
@@ -226,22 +226,7 @@ function PanelPerfilMedico({ isOpen, onClose, medico, especialidades, onReservar
                             <div className="rounded-[1.5rem] bg-white p-6 shadow-sm border border-gray-100">
                                 <p className="text-sm font-medium leading-relaxed text-brandText">
                                     Profesional con amplia trayectoria en el diagnóstico y tratamiento integral de patologías relacionadas a la <strong>{especialidad}</strong>. 
-                                    Su enfoque se centra en la medicina preventiva y el seguimiento personalizado de cada paciente.
                                 </p>
-                            </div>
-                        </section>
-
-                        <section>
-                            <h4 className="mb-4 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
-                                <span className="material-symbols-outlined text-secondary text-lg">clinical_notes</span>
-                                Áreas de Atención
-                            </h4>
-                            <div className="flex flex-wrap gap-2">
-                                {['Consulta General', 'Control Periódico', 'Intervenciones', 'Seguimiento Crónico'].map(tag => (
-                                    <span key={tag} className="rounded-xl bg-white border border-gray-100 px-4 py-2 text-[11px] font-bold text-primary shadow-sm">
-                                        {tag}
-                                    </span>
-                                ))}
                             </div>
                         </section>
                     </div>

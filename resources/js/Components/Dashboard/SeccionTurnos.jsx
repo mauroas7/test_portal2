@@ -1,5 +1,3 @@
-// resources/js/Components/Dashboard/SeccionTurnos.jsx
-
 import { useState } from 'react';
 
 export default function SeccionTurnos({ turnosFuturos, turnosPasados, handleCancelarTurno }) {
