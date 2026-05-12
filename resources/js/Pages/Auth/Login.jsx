@@ -14,7 +14,7 @@ export default function Login() {
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4 font-sans antialiased lg:p-8">
-            <Head title="Ingreso | Hospital Universitario" />
+            <Head title="Ingreso" />
 
             <div className="flex min-h-[600px] w-full max-w-[1000px] flex-col overflow-hidden rounded-3xl bg-white shadow-2xl md:flex-row">
                 <div className="relative hidden flex-col justify-between overflow-hidden bg-primary p-12 md:flex md:w-2/5">
@@ -33,7 +33,7 @@ export default function Login() {
                     
                     <div className="relative z-10">
                         <div className="mb-3 h-1 w-8 rounded-full bg-secondary"></div>
-                        <p className="text-[10px] font-black text-blue-100/50 uppercase tracking-[0.2em]">Ingreso de Paciente</p>
+                        <p className="text-[10px] font-black text-blue-100/50 uppercase tracking-[0.2em]">Ingreso de Pacientes</p>
                     </div>
                 </div>
 

@@ -169,7 +169,7 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
 
     return (
         <div className="min-h-screen bg-primary p-3 font-sans antialiased lg:p-4 relative">
-            <Head title="Inicio | Hospital Universitario" />
+            <Head title="Inicio" />
 
             <div className="mx-auto flex flex-col min-h-[calc(100vh-1.5rem)] w-full max-w-[1900px] overflow-hidden rounded-[2rem] bg-white shadow-2xl lg:min-h-[calc(100vh-2rem)]">
                 

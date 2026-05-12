@@ -22,7 +22,7 @@ export default function Register() {
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-[#F3F4F6] p-3 font-sans antialiased lg:p-5">
-            <Head title="Registro | Hospital Universitario" />
+            <Head title="Registro" />
 
             <div className="flex w-full max-w-[1120px] flex-col overflow-hidden rounded-3xl bg-white shadow-2xl lg:flex-row">
                 <div className="relative hidden flex-col justify-between overflow-hidden bg-primary p-10 lg:flex lg:w-[32%]">

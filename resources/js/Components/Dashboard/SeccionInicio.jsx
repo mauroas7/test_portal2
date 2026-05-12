@@ -159,7 +159,7 @@ export default function SeccionInicio({ userName, turnosFuturos, setTab, handleC
                                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-emerald-600 shadow-sm transition-colors group-hover:bg-emerald-500 group-hover:text-white">
                                     <span className="material-symbols-outlined text-[20px]">groups</span>
                                 </div>
-                                <span className="text-[10px] font-black uppercase tracking-widest text-primary">Mi Equipo</span>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-primary">Mis Médicos</span>
                             </button>
                         </div>
                     </div>

@@ -15,7 +15,7 @@ export default function MedicalLogin() {
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4 font-sans antialiased lg:p-8">
-            <Head title="Ingreso médico | Hospital Universitario" />
+            <Head title="Ingreso médico" />
 
             <div className="flex min-h-[600px] w-full max-w-[1000px] flex-col overflow-hidden rounded-3xl bg-white shadow-2xl md:flex-row">
                 <div className="relative hidden flex-col justify-between overflow-hidden bg-primary p-12 md:flex md:w-2/5">
