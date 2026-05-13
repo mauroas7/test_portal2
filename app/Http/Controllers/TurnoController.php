@@ -12,7 +12,7 @@ class TurnoController extends Controller
         // 1. Validamos que los datos que llegan desde React sean correctos
         $request->validate([
             'especialidad_id' => 'required|exists:especialidades,id',
-            'medico_id'       => 'nullable|exists:medicos,id', // Puede ser null si eligió "Cualquier Profesional"
+            'medico_id'       => 'nullable|exists:medicos,id',
             'fecha'           => 'required|string',
             'hora'            => 'required|string',
         ]);

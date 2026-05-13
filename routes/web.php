@@ -4,7 +4,7 @@ use App\Models\Especialidad;
 use App\Models\Medico;
 use App\Models\Turno;
 use App\Http\Controllers\TurnoController;
-use App\Http\Controllers\ProfileController; // <-- IMPORTANTE: Agregar esta línea
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
