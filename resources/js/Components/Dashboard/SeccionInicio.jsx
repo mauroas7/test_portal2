@@ -11,7 +11,7 @@ export default function SeccionInicio({ userName, turnosFuturos, setTab, handleC
             <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
                 
                 {/* --- COLUMNA IZQUIERDA  --- */}
-                <div className="w-full lg:w-7/12">
+                 <div className="w-full lg:w-7/12">
                     {turnosFuturos.length > 0 ? (
                         <div className="relative overflow-hidden rounded-[2rem] bg-primary p-6 sm:p-8 text-white shadow-lg shadow-primary/20 flex flex-col">
                             {/* Marca de agua de fondo */}
@@ -22,13 +22,13 @@ export default function SeccionInicio({ userName, turnosFuturos, setTab, handleC
                             {/* Cabecera de la tarjeta */}
                             <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 relative z-10">
                                 <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-secondary">Tu Próximo Turno</h2>
-                                {turnosFuturos[0].estado === 'confirmado' && (
+                                {turnosFuturos[0].estado === 1 && (
                                     <span className="bg-white/10 border border-white/20 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full flex items-center gap-1.5 w-fit shadow-sm">
                                         <span className="relative flex h-2 w-2">
                                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                                           <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                                         </span>
-                                        Confirmado
+                                        Pendiente
                                     </span>
                                 )}
                             </div>
@@ -37,13 +37,13 @@ export default function SeccionInicio({ userName, turnosFuturos, setTab, handleC
                             <div className="mb-6 flex flex-col sm:flex-row gap-5 relative z-10">
                                 <div className="flex flex-col items-center justify-center bg-white rounded-xl w-full sm:w-24 h-24 shrink-0 shadow-lg text-primary text-center overflow-hidden">
                                     <span className="text-[10px] font-black uppercase tracking-widest bg-blue-50 w-full py-1.5 border-b border-gray-100 text-primary">
-                                        {new Date(turnosFuturos[0].fecha_hora).toLocaleDateString('es-AR', { month: 'short' })}
+                                        {new Date(turnosFuturos[0].fecha).toLocaleDateString('es-AR', { month: 'short' })}
                                     </span>
                                     <span className="text-4xl font-black leading-none mt-2">
-                                        {new Date(turnosFuturos[0].fecha_hora).getDate()}
+                                        {new Date(turnosFuturos[0].fecha).getDate()}
                                     </span>
                                     <span className="text-[10px] font-bold uppercase text-gray-400 mt-1 mb-2">
-                                        {new Date(turnosFuturos[0].fecha_hora).toLocaleDateString('es-AR', { weekday: 'short' })}
+                                        {new Date(turnosFuturos[0].fecha).toLocaleDateString('es-AR', { weekday: 'short' })}
                                     </span>
                                 </div>
                                 <div className="flex flex-col justify-center w-full min-w-0">
@@ -54,8 +54,9 @@ export default function SeccionInicio({ userName, turnosFuturos, setTab, handleC
                                         </span>
                                     </div>
                                     <h3 className="text-xl sm:text-2xl font-black text-white leading-tight uppercase tracking-tight break-words">
-                                        {turnosFuturos[0].especialidad}
+                                        {turnosFuturos[0].especialidad?.nombre}
                                     </h3>
+                                    <p>{turnosFuturos[0].especialidad?.id}</p>
                                     <div className="flex items-center gap-2 mt-2 opacity-80 flex-wrap">
                                         <span className="material-symbols-outlined text-sm shrink-0">medical_information</span>
                                         <p className="text-sm font-semibold truncate">Dr/a. {turnosFuturos[0].medico_nombre}</p>

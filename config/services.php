@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'alephoo' => [
+        'base_url' => env('ALEPHOO_BASE_URL'),
+        'user' => env('ALEPHOO_USER'),
+        'password' => env('ALEPHOO_PASSWORD'),
+    ],
+
 ];

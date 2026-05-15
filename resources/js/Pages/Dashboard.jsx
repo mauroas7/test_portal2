@@ -7,13 +7,27 @@ import SeccionSalud from '@/Components/Dashboard/SeccionSalud.jsx';
 import SeccionCartilla from '@/Components/Dashboard/SeccionCartilla.jsx';
 import SeccionBiblioteca from '@/Components/Dashboard/SeccionBiblioteca.jsx';
 
-export default function Dashboard({ auth, turnos = [], especialidades_db = [], medicos_db = [] }) {
+export default function Dashboard({ auth }) {   // Se quitó esto --> turnos = [], especialidades_db = [], medicos_db = []
+
+    const [turnos, setTurnos] = useState([]);
+
+    useEffect(() => {
+        axios.get('/api/personas/30631/turnos?estado=1')
+
+            .then(response => {
+                setTurnos(response.data.data);
+            })
+            .catch(error => {
+                console.error(error);
+            });
+    }, []);
+
     const [tab, setTab] = useState('inicio');
-    
+
     // --- ESTADOS DEL BUSCADOR ---
     const [globalSearchInput, setGlobalSearchInput] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
-    
+
     const [mobileMenu, setMobileMenu] = useState(false);
     const [profileOpen, setProfileOpen] = useState(false);
     const { post } = useForm();
@@ -27,24 +41,24 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
         return () => clearTimeout(handler);
     }, [globalSearchInput]);
 
-    const searchResults = useMemo(() => {
-        if (debouncedSearch.length < 2) return { especialidades: [], medicos: [] };
-        const searchLower = debouncedSearch.toLowerCase();
-        
-        return {
-            especialidades: especialidades_db.filter(e => e.nombre.toLowerCase().includes(searchLower)),
-            medicos: medicos_db.filter(m => (m.nombre + ' ' + m.apellido).toLowerCase().includes(searchLower))
-        };
-    }, [debouncedSearch, especialidades_db, medicos_db]);
+    // const searchResults = useMemo(() => {
+    //     if (debouncedSearch.length < 2) return { especialidades: [], medicos: [] };
+    //     const searchLower = debouncedSearch.toLowerCase();
+
+    //     return {
+    //         especialidades: especialidades_db.filter(e => e.nombre.toLowerCase().includes(searchLower)),
+    //         medicos: medicos_db.filter(m => (m.nombre + ' ' + m.apellido).toLowerCase().includes(searchLower))
+    //     };
+    // }, [debouncedSearch, especialidades_db, medicos_db]);
 
     const turnosFuturos = useMemo(() => {
         const hoy = new Date();
-        return turnos.filter(t => new Date(t.fecha_hora) >= hoy);
+        return turnos.filter(t => new Date(`${t.fecha} ${t.hora}`) >= hoy);
     }, [turnos]);
 
     const turnosPasados = useMemo(() => {
         const hoy = new Date();
-        return turnos.filter(t => new Date(t.fecha_hora) < hoy);
+        return turnos.filter(t => new Date(`${t.fecha} ${t.hora}`) < hoy);
     }, [turnos]);
 
     const menuItems = [
@@ -67,11 +81,10 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
 
     const navButtonClass = (item) => {
         const active = tab === item.id;
-        return `flex w-full items-center gap-4 rounded-xl border-l-4 px-4 py-3.5 text-left transition-colors ${
-            active
+        return `flex w-full items-center gap-4 rounded-xl border-l-4 px-4 py-3.5 text-left transition-colors ${active
                 ? 'border-secondary bg-[#F4F7F9] text-primary shadow-sm'
                 : 'border-transparent text-brandText hover:bg-[#F4F7F9]/50 hover:shadow-sm'
-        } font-semibold`;
+            } font-semibold`;
     };
 
     const renderNavigation = () => (
@@ -90,13 +103,13 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
     const renderProfileMenu = (align = 'right-0', margin = 'top-14') => (
         profileOpen && (
             <div className={`absolute ${margin} ${align} z-50 w-64 rounded-2xl border border-gray-100 bg-white py-2 shadow-2xl animate-fade-in`}>
-                
+
                 {/* BLOQUE 1: Gestión del Paciente */}
                 <div className="flex flex-col">
                     <Link href={route('profile.edit')} className="flex items-center gap-3 px-5 py-3 text-sm font-bold text-brandText transition-colors hover:bg-[#F8F9FA] hover:text-primary">
                         <span className="material-symbols-outlined text-secondary text-[20px]">person</span> Mi Perfil
                     </Link>
-                    
+
                     {/* Botones de ejemplo */}
                     <button className="flex w-full items-center gap-3 px-5 py-3 text-sm font-bold text-brandText transition-colors hover:bg-[#F8F9FA] hover:text-primary text-left">
                         <span className="material-symbols-outlined text-secondary text-[20px]">family_restroom</span> Mi Grupo Familiar
@@ -172,9 +185,9 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
             <Head title="Inicio" />
 
             <div className="mx-auto flex flex-col min-h-[calc(100vh-1.5rem)] w-full max-w-[1900px] overflow-hidden rounded-[2rem] bg-white shadow-2xl lg:min-h-[calc(100vh-2rem)]">
-                
+
                 <div className="flex flex-1 w-full min-h-[calc(100vh-1.5rem)] lg:min-h-[calc(100vh-2rem)]">
-                    
+
                     {/* SIDEBAR IZQUIERDO: Con el botón global */}
                     <aside className="hidden w-72 shrink-0 flex-col border-r border-gray-100 bg-white p-8 lg:flex relative z-20 shadow-[4px_0_24px_-10px_rgba(0,0,0,0.05)]">
                         <div className="mb-12 flex justify-center px-2">
@@ -183,8 +196,8 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
 
                         {/* --- BOTÓN GLOBAL: NUEVO TURNO --- */}
                         <div className="mb-10 pr-2">
-                            <button 
-                                onClick={() => { setModalStep(1); setIsModalOpen(true); }} 
+                            <button
+                                onClick={() => { setModalStep(1); setIsModalOpen(true); }}
                                 className="group flex w-full items-center justify-center gap-3 rounded-2xl bg-primary px-4 py-4 text-[12px] font-black uppercase tracking-widest text-white shadow-lg shadow-primary/30 transition-[background-color,color,shadow,transform] duration-300 hover:-translate-y-1 hover:bg-[#00284A] hover:text-[#C7A36E] hover:shadow-2xl hover:shadow-[#00284A]/40"
                             >
                                 <span className="material-symbols-outlined text-[24px] transition-transform duration-300 group-hover:scale-110">calendar_add_on</span>
@@ -199,7 +212,7 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                     </aside>
 
                     <div className="flex min-w-0 flex-1 flex-col bg-[#F4F7F9]">
-                        
+
                         <header className="relative z-30 shrink-0 border-b border-gray-100 bg-white px-5 py-4 lg:px-12 lg:py-6 shadow-sm">
                             <div className="mb-4 flex items-center justify-between gap-4 lg:hidden">
                                 <button type="button" onClick={() => setMobileMenu((value) => !value)} className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#F8F9FA] text-primary transition-colors hover:bg-gray-100">
@@ -223,15 +236,15 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 w-full">
                                 <div className="relative w-full max-w-2xl z-50">
                                     <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">search</span>
-                                    <input 
-                                        type="text" 
-                                        value={globalSearchInput} 
+                                    <input
+                                        type="text"
+                                        value={globalSearchInput}
                                         onChange={(e) => setGlobalSearchInput(e.target.value)}
-                                        placeholder="Buscar médico, especialidad..." 
-                                        className="w-full rounded-2xl border border-gray-100 bg-[#F4F7F9] py-3.5 pl-12 pr-12 text-sm font-semibold text-primary transition-colors placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-secondary/20 focus:border-secondary/20 shadow-inner" 
+                                        placeholder="Buscar médico, especialidad..."
+                                        className="w-full rounded-2xl border border-gray-100 bg-[#F4F7F9] py-3.5 pl-12 pr-12 text-sm font-semibold text-primary transition-colors placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-secondary/20 focus:border-secondary/20 shadow-inner"
                                     />
                                     {globalSearchInput && (
-                                        <button 
+                                        <button
                                             onClick={() => {
                                                 setGlobalSearchInput('');
                                                 setDebouncedSearch('');
@@ -304,9 +317,9 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                                 {tab === 'inicio' && <SeccionInicio userName={userName} turnosFuturos={turnosFuturos} handleCancelarTurno={handleCancelarTurno} setTab={setTab} />}
                                 {tab === 'turnos' && <SeccionTurnos turnosFuturos={turnosFuturos} turnosPasados={turnosPasados} handleCancelarTurno={handleCancelarTurno} />}
                                 {tab === 'salud' && <SeccionSalud />}
-                                {tab === 'cartilla' && <SeccionCartilla especialidadesDb={especialidades_db} medicosDb={medicos_db} setIsModalOpen={setIsModalOpen} setNuevoTurno={setNuevoTurno} nuevoTurno={nuevoTurno} setModalStep={setModalStep} />}
+                                {/* {tab === 'cartilla' && <SeccionCartilla especialidadesDb={especialidades_db} medicosDb={medicos_db} setIsModalOpen={setIsModalOpen} setNuevoTurno={setNuevoTurno} nuevoTurno={nuevoTurno} setModalStep={setModalStep} />} */}
                                 {tab === 'biblioteca' && <SeccionBiblioteca />}
-                            </main> 
+                            </main>
 
                             {tab === 'inicio' && (
                                 <aside className="hidden w-80 shrink-0 flex-col border-l border-gray-100 bg-white xl:flex z-20 shadow-[-4px_0_24px_-10px_rgba(0,0,0,0.05)] overflow-y-auto">
@@ -323,15 +336,15 @@ export default function Dashboard({ auth, turnos = [], especialidades_db = [], m
                 <Footer />
             </div>
 
-            <TurnoModal 
-                isOpen={isModalOpen} 
-                onClose={closeModal} 
-                step={modalStep} 
+            <TurnoModal
+                isOpen={isModalOpen}
+                onClose={closeModal}
+                step={modalStep}
                 setStep={setModalStep}
                 turnoData={nuevoTurno}
                 setTurnoData={setNuevoTurno}
-                especialidadesDb={especialidades_db}
-                medicosDb={medicos_db}
+                // especialidadesDb={especialidades_db}
+                // medicosDb={medicos_db}
                 user={auth?.user}
                 setToast={setToast}
             />
@@ -374,7 +387,7 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
         (medico) => medico.especialidad_id === turnoData.especialidad_id
     );
 
-    const especialidadesFiltradas = especialidadesDb.filter(esp => 
+    const especialidadesFiltradas = especialidadesDb.filter(esp =>
         esp.nombre.toLowerCase().includes(searchEspecialidad.toLowerCase())
     );
 
@@ -386,11 +399,11 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
     };
 
     return (
-        <div 
+        <div
             className="fixed inset-0 z-[100] flex items-center justify-center bg-primary/50 p-4 sm:p-6 backdrop-blur-md animate-fade-in cursor-pointer"
             onClick={onClose}
         >
-            <div 
+            <div
                 className="relative flex w-full max-w-5xl flex-col overflow-hidden rounded-[2rem] bg-white shadow-2xl h-[85vh] cursor-auto"
                 onClick={(e) => e.stopPropagation()}
             >
@@ -414,30 +427,29 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-8 lg:p-10 bg-white">
-                    
+
                     {step === 1 && (
                         <div className="animate-fade-in mx-auto w-full">
                             <div className="relative mb-8 mx-auto max-w-3xl">
                                 <span className="material-symbols-outlined absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 text-[28px]">search</span>
-                                <input 
-                                    type="text" 
+                                <input
+                                    type="text"
                                     value={searchEspecialidad}
                                     onChange={(e) => setSearchEspecialidad(e.target.value)}
-                                    placeholder="Escriba la especialidad..." 
-                                    className="w-full rounded-2xl border-2 border-gray-100 bg-[#F4F7F9] py-4 pl-16 pr-6 text-base font-bold text-primary transition-colors placeholder:text-gray-400 focus:border-secondary/50 focus:bg-white focus:outline-none shadow-inner" 
+                                    placeholder="Escriba la especialidad..."
+                                    className="w-full rounded-2xl border-2 border-gray-100 bg-[#F4F7F9] py-4 pl-16 pr-6 text-base font-bold text-primary transition-colors placeholder:text-gray-400 focus:border-secondary/50 focus:bg-white focus:outline-none shadow-inner"
                                 />
                             </div>
                             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                                 {especialidadesFiltradas.length > 0 ? (
                                     especialidadesFiltradas.map((esp) => (
-                                        <button 
+                                        <button
                                             key={esp.id}
                                             onClick={() => setTurnoData({ ...turnoData, especialidad_id: esp.id, especialidad: esp.nombre, medico_id: null, medico: null })}
-                                            className={`group flex flex-col items-start justify-center rounded-xl border-2 p-5 text-left transition-[border-color,background-color,transform] hover:-translate-y-1 ${
-                                                turnoData.especialidad_id === esp.id 
-                                                ? 'border-secondary bg-blue-50/50 shadow-md' 
-                                                : 'border-transparent border-gray-100 bg-[#F4F7F9] hover:bg-white hover:border-secondary/30 hover:shadow-sm'
-                                            }`}
+                                            className={`group flex flex-col items-start justify-center rounded-xl border-2 p-5 text-left transition-[border-color,background-color,transform] hover:-translate-y-1 ${turnoData.especialidad_id === esp.id
+                                                    ? 'border-secondary bg-blue-50/50 shadow-md'
+                                                    : 'border-transparent border-gray-100 bg-[#F4F7F9] hover:bg-white hover:border-secondary/30 hover:shadow-sm'
+                                                }`}
                                         >
                                             <div className="flex w-full items-center justify-between mb-2">
                                                 <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors ${turnoData.especialidad_id === esp.id ? 'bg-secondary text-white' : 'bg-white shadow-sm text-gray-400'}`}>
@@ -480,13 +492,12 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                                             key={prof.id}
                                             disabled={prof.turnos_disponibles === 0}
                                             onClick={() => setTurnoData({ ...turnoData, medico_id: prof.id, medico: `${prof.apellido}, ${prof.nombre}` })}
-                                            className={`flex items-center gap-5 rounded-xl border-2 p-5 text-left transition-[border-color,background-color] ${
-                                                prof.turnos_disponibles === 0 
-                                                ? 'border-gray-100 bg-[#F4F7F9] opacity-60 cursor-not-allowed' 
-                                                : turnoData.medico_id === prof.id
-                                                    ? 'border-secondary bg-blue-50/50 shadow-md'
-                                                    : 'border-transparent border-gray-100 bg-[#F4F7F9] hover:bg-white hover:border-secondary/30 hover:shadow-sm'
-                                            }`}
+                                            className={`flex items-center gap-5 rounded-xl border-2 p-5 text-left transition-[border-color,background-color] ${prof.turnos_disponibles === 0
+                                                    ? 'border-gray-100 bg-[#F4F7F9] opacity-60 cursor-not-allowed'
+                                                    : turnoData.medico_id === prof.id
+                                                        ? 'border-secondary bg-blue-50/50 shadow-md'
+                                                        : 'border-transparent border-gray-100 bg-[#F4F7F9] hover:bg-white hover:border-secondary/30 hover:shadow-sm'
+                                                }`}
                                         >
                                             <div className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${turnoData.medico_id === prof.id ? 'border-secondary bg-secondary text-white' : 'border-primary bg-white shadow-sm text-primary'}`}>
                                                 <span className="material-symbols-outlined text-[28px]">person</span>
@@ -530,8 +541,8 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                                         <span className="material-symbols-outlined text-secondary text-[24px]">calendar_month</span>
                                         1. Elija el día
                                     </h3>
-                                    
-                                    <Calendario 
+
+                                    <Calendario
                                         fechaSeleccionada={turnoData.fecha}
                                         alSeleccionarFecha={(f) => setTurnoData({ ...turnoData, fecha: f, hora: null })}
                                     />
@@ -543,7 +554,7 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                                         <span className="material-symbols-outlined text-secondary text-[24px]">schedule</span>
                                         2. Horarios disponibles
                                     </h3>
-                                    
+
                                     {!turnoData.fecha ? (
                                         <div className="flex h-40 items-center justify-center rounded-[2rem] border border-dashed border-gray-200 bg-[#F4F7F9]">
                                             <p className="text-sm font-semibold text-gray-400">Seleccione un día en el calendario primero</p>
@@ -554,7 +565,7 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                                                 <p className="mb-3 text-[10px] font-black uppercase tracking-widest text-gray-400">Turno Mañana</p>
                                                 <div className="flex flex-wrap gap-3">
                                                     {['09:00', '09:30', '10:15', '11:00'].map(hora => (
-                                                        <button 
+                                                        <button
                                                             key={hora}
                                                             onClick={() => setTurnoData({ ...turnoData, hora })}
                                                             className={`rounded-xl border px-5 py-2.5 text-sm font-black transition-colors ${turnoData.hora === hora ? 'border-secondary bg-secondary text-white shadow-md' : 'border-gray-200 bg-[#F4F7F9] text-primary hover:border-secondary hover:bg-white'}`}
@@ -568,7 +579,7 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                                                 <p className="mb-3 text-[10px] font-black uppercase tracking-widest text-gray-400">Turno Tarde</p>
                                                 <div className="flex flex-wrap gap-3">
                                                     {['14:00', '15:30', '16:00'].map(hora => (
-                                                        <button 
+                                                        <button
                                                             key={hora}
                                                             onClick={() => setTurnoData({ ...turnoData, hora })}
                                                             className={`rounded-xl border px-5 py-2.5 text-sm font-black transition-colors ${turnoData.hora === hora ? 'border-secondary bg-secondary text-white shadow-md' : 'border-gray-200 bg-[#F4F7F9] text-primary hover:border-secondary hover:bg-white'}`}
@@ -599,7 +610,7 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                             </div>
 
                             <h3 className="font-black text-2xl uppercase text-primary tracking-tight mb-8 text-center">Resumen del Turno</h3>
-                            
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 mb-10 text-left">
                                 <div className="rounded-[24px] border border-gray-100 bg-white p-6 lg:p-8 shadow-sm transition-[shadow] hover:shadow-md flex flex-col">
                                     <div className="mb-6 flex items-center gap-3 border-b border-gray-100 pb-4">
@@ -692,26 +703,25 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                     )}
 
                     {step < 4 ? (
-                        <button 
-                            disabled={!canContinue()} 
-                            onClick={() => setStep(step + 1)} 
-                            className={`flex items-center gap-2 rounded-full px-8 py-3 text-xs font-black uppercase tracking-widest text-white transition-colors duration-300 ${
-                                canContinue() ? 'bg-primary hover:bg-[#00284A] shadow-lg shadow-primary/30' : 'bg-gray-300 cursor-not-allowed'
-                            }`}
+                        <button
+                            disabled={!canContinue()}
+                            onClick={() => setStep(step + 1)}
+                            className={`flex items-center gap-2 rounded-full px-8 py-3 text-xs font-black uppercase tracking-widest text-white transition-colors duration-300 ${canContinue() ? 'bg-primary hover:bg-[#00284A] shadow-lg shadow-primary/30' : 'bg-gray-300 cursor-not-allowed'
+                                }`}
                         >
                             Continuar <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
                         </button>
                     ) : (
-                        <button 
+                        <button
                             onClick={() => {
                                 router.post(route('turnos.store'), turnoData, {
                                     preserveScroll: true,
                                     onSuccess: () => {
-                                        onClose(); 
+                                        onClose();
                                         setToast('¡Turno confirmado con éxito!');
                                     }
                                 });
-                            }} 
+                            }}
                             className="flex items-center gap-2 rounded-full bg-emerald-500 px-8 py-3 text-xs font-black uppercase tracking-widest text-white transition-[background-color,transform] hover:bg-emerald-600 shadow-lg shadow-emerald-500/30 hover:-translate-y-1"
                         >
                             <span className="material-symbols-outlined text-[18px]">check_circle</span> Confirmar Turno
@@ -726,7 +736,7 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
 // Componente de Calendario
 function Calendario({ fechaSeleccionada, alSeleccionarFecha }) {
     const [viewDate, setViewDate] = useState(new Date()); // Fecha para controlar qué mes vemos
-    
+
     const diasSemana = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
     const meses = [
         "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -739,7 +749,7 @@ function Calendario({ fechaSeleccionada, alSeleccionarFecha }) {
     // Lógica para calcular la grilla
     const primerDiaMes = new Date(año, mes, 1).getDay();
     const diasEnMes = new Date(año, mes + 1, 0).getDate();
-    
+
     // Simulación de días disponibles (Esto tendría que venir de la API)
     const diasDisponibles = [14, 15, 18, 19, 20, 21, 22, 28, 29];
 
@@ -803,10 +813,10 @@ function Calendario({ fechaSeleccionada, alSeleccionarFecha }) {
                             onClick={() => alSeleccionarFecha(`${dia} de ${meses[mes]}`)}
                             className={`
                                 relative flex h-10 w-full items-center justify-center rounded-xl text-sm font-bold transition-all
-                                ${seleccionado 
-                                    ? 'bg-primary text-white shadow-md scale-105' 
-                                    : disponible 
-                                        ? 'bg-[#F4F7F9] text-primary hover:bg-secondary/20 hover:text-secondary' 
+                                ${seleccionado
+                                    ? 'bg-primary text-white shadow-md scale-105'
+                                    : disponible
+                                        ? 'bg-[#F4F7F9] text-primary hover:bg-secondary/20 hover:text-secondary'
                                         : 'text-gray-300 cursor-not-allowed opacity-40'}
                                 ${esHoy(dia) && !seleccionado ? 'border-2 border-secondary/30' : ''}
                             `}

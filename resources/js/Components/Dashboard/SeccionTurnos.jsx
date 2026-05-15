@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 export default function SeccionTurnos({ turnosFuturos, turnosPasados, handleCancelarTurno }) {
-    const [subTabTurnos, setSubTabTurnos] = useState('proximos'); 
+    const [subTabTurnos, setSubTabTurnos] = useState('proximos');
 
     return (
         <div className="w-full animate-fade-in">
@@ -18,7 +19,22 @@ export default function SeccionTurnos({ turnosFuturos, turnosPasados, handleCanc
                     Historial de Visitas
                 </button>
             </div>
-            
+
+            <div>
+
+                <h1>Mis turnos</h1>
+
+                {turnos.map(turno => (
+                    <div key={turno.id}>
+
+                        <p>{turno.fecha}</p>
+                        <p>
+                            {turno.profesional?.persona?.nombre_completo}
+                        </p>
+                    </div>
+                ))}
+            </div>
+
             {subTabTurnos === 'proximos' && (
                 <div className="overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-sm animate-fade-in">
                     <div className="hidden grid-cols-5 border-b border-gray-100 bg-[#F8F9FA] px-10 py-5 lg:grid">
@@ -53,11 +69,11 @@ export default function SeccionTurnos({ turnosFuturos, turnosPasados, handleCanc
                                         <p className="text-[10px] font-medium text-gray-400">Consultorio 04</p>
                                     </div>
                                     <div className="flex justify-start lg:justify-end">
-                                        <button 
-                                            onClick={() => handleCancelarTurno(turno.id)} 
+                                        <button
+                                            onClick={() => handleCancelarTurno(turno.id)}
                                             className="group flex w-full lg:w-auto items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-gray-500 transition-[background-color,border-color,color,shadow] duration-300 hover:border-red-200 hover:bg-red-50 hover:text-red-600 shadow-sm hover:shadow-md"
                                         >
-                                            <span className="material-symbols-outlined text-[16px] transition-transform duration-300 group-hover:-rotate-12">event_busy</span> 
+                                            <span className="material-symbols-outlined text-[16px] transition-transform duration-300 group-hover:-rotate-12">event_busy</span>
                                             Cancelar
                                         </button>
                                     </div>

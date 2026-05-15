@@ -15,33 +15,36 @@ Route::get('/', function () {
 
 // 2. RUTA DEL DASHBOARD
 Route::get('/dashboard', function () {
-    
-    $especialidades = Especialidad::all();
-    $medicos = Medico::all()->map(function($medico) {
-        $medico->turnos_disponibles = rand(0, 12); 
-        return $medico;
-    });
 
-    $turnos = Turno::with(['especialidad', 'medico'])
-        ->where('user_id', auth()->id())
-        ->orderBy('fecha_hora', 'asc')
-        ->get()
-        ->map(function ($turno) {
-            return [
-                'id' => $turno->id,
-                'fecha_hora' => $turno->fecha_hora,
-                'estado' => $turno->estado,
-                'especialidad' => $turno->especialidad->nombre ?? 'Sin especialidad',
-                'medico_nombre' => $turno->medico ? ($turno->medico->apellido . ', ' . $turno->medico->nombre) : 'Profesional a designar',
-                'consultorio' => $turno->consultorio
-            ];
-        });
+    // $especialidades = Especialidad::all();
+    // $medicos = Medico::all()->map(function ($medico) {
+    //     $medico->turnos_disponibles = rand(0, 12);
+    //     return $medico;
+    // });
 
-    return Inertia::render('Dashboard', [
-        'especialidades_db' => $especialidades,
-        'medicos_db' => $medicos,
-        'turnos' => $turnos 
-    ]);
+    // $turnos = Turno::with(['especialidad', 'medico'])
+    //     ->where('user_id', auth()->id())                // Se podría reemplazar por --> Auth::id() + use Illuminate\Support\Facades\Auth;
+    //     ->orderBy('fecha_hora', 'asc')
+    //     ->get()
+    //     ->map(function ($turno) {
+    //         return [
+    //             'id' => $turno->id,
+    //             'fecha_hora' => $turno->fecha_hora,
+    //             'estado' => $turno->estado,
+    //             'especialidad' => $turno->especialidad->nombre ?? 'Sin especialidad',
+    //             'medico_nombre' => $turno->medico ? ($turno->medico->apellido . ', ' . $turno->medico->nombre) : 'Profesional a designar',
+    //             'consultorio' => $turno->consultorio
+    //         ];
+    //     });
+
+    return Inertia::render(
+        'Dashboard'
+        //  [
+        //     'especialidades_db' => $especialidades,
+        //     'medicos_db' => $medicos,
+        //     'turnos' => $turnos 
+        // ]
+    );
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // 3. RUTAS DE PERFIL
@@ -56,4 +59,4 @@ Route::post('/turnos', [TurnoController::class, 'store'])->middleware(['auth'])-
 Route::delete('/turnos/{id}', [TurnoController::class, 'destroy'])->middleware(['auth'])->name('turnos.destroy');
 
 // 5. RUTAS DE AUTENTICACIÓN
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
