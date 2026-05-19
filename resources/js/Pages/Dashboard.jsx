@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Head, useForm, router, Link } from '@inertiajs/react';
 
 import SeccionInicio from '@/Components/Dashboard/SeccionInicio.jsx';
@@ -42,7 +42,25 @@ export default function Dashboard({ auth }) {   // Se quitó esto --> turnos = [
     const [profileOpen, setProfileOpen] = useState(false);
     const { post } = useForm();
 
-    const userName = auth?.user?.name ?? 'Paciente';
+    // Unir Nombre y Apellido (Si existen, sino usa 'Paciente')
+    const nombreCompleto = `${auth?.user?.name || ''} ${auth?.user?.last_name || ''}`.trim() || 'Paciente';
+    const userName = `${auth?.user?.name || ''} ${auth?.user?.last_name || ''}`.trim() || 'Paciente';
+    // Inicial para el avatar (Ej: 'J' de Juan)
+    const inicial = auth?.user?.name ? auth.user.name.substring(0, 1).toUpperCase() : 'P';
+    
+    // Referencia para detectar clics fuera del menú
+    const profileMenuRef = useRef(null);
+
+    // Efecto para cerrar el menú al hacer clic afuera
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+                setProfileOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     useEffect(() => {
         const handler = setTimeout(() => {
