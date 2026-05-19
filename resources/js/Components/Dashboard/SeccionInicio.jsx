@@ -9,24 +9,24 @@ export default function SeccionInicio({ userName, turnosFuturos, setTab, handleC
 
             {/* Contenedor Principal */}
             <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
-                
+
                 {/* --- COLUMNA IZQUIERDA  --- */}
-                 <div className="w-full lg:w-7/12">
+                <div className="w-full lg:w-7/12">
                     {turnosFuturos.length > 0 ? (
                         <div className="relative overflow-hidden rounded-[2rem] bg-primary p-6 sm:p-8 text-white shadow-lg shadow-primary/20 flex flex-col">
                             {/* Marca de agua de fondo */}
                             <div className="absolute -right-4 -top-10 opacity-[0.07] pointer-events-none">
                                 <span className="material-symbols-outlined text-[200px]">cardiology</span>
                             </div>
-                            
+
                             {/* Cabecera de la tarjeta */}
                             <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 relative z-10">
                                 <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-secondary">Tu Próximo Turno</h2>
                                 {turnosFuturos[0].estado === 1 && (
                                     <span className="bg-white/10 border border-white/20 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full flex items-center gap-1.5 w-fit shadow-sm">
                                         <span className="relative flex h-2 w-2">
-                                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                                          <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                                         </span>
                                         Pendiente
                                     </span>
@@ -37,29 +37,30 @@ export default function SeccionInicio({ userName, turnosFuturos, setTab, handleC
                             <div className="mb-6 flex flex-col sm:flex-row gap-5 relative z-10">
                                 <div className="flex flex-col items-center justify-center bg-white rounded-xl w-full sm:w-24 h-24 shrink-0 shadow-lg text-primary text-center overflow-hidden">
                                     <span className="text-[10px] font-black uppercase tracking-widest bg-blue-50 w-full py-1.5 border-b border-gray-100 text-primary">
-                                        {new Date(turnosFuturos[0].fecha).toLocaleDateString('es-AR', { month: 'short' })}
+                                        {new Date(turnosFuturos[0].fecha + 'T00:00:00').toLocaleDateString('es-AR', { month: 'short' })}
                                     </span>
                                     <span className="text-4xl font-black leading-none mt-2">
-                                        {new Date(turnosFuturos[0].fecha).getDate()}
+                                        {new Date(turnosFuturos[0].fecha + 'T00:00:00').getDate()}
                                     </span>
                                     <span className="text-[10px] font-bold uppercase text-gray-400 mt-1 mb-2">
-                                        {new Date(turnosFuturos[0].fecha).toLocaleDateString('es-AR', { weekday: 'short' })}
+                                        {new Date(turnosFuturos[0].fecha + 'T00:00:00').toLocaleDateString('es-AR', { weekday: 'short' })}
                                     </span>
                                 </div>
                                 <div className="flex flex-col justify-center w-full min-w-0">
                                     <div className="flex items-center gap-2 mb-2 bg-white/10 w-fit px-3 py-1 rounded-lg border border-white/10">
                                         <span className="material-symbols-outlined text-secondary text-sm">schedule</span>
                                         <span className="text-xs font-black uppercase tracking-widest text-secondary whitespace-nowrap">
-                                            {new Date(turnosFuturos[0].fecha_hora).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false })} hs
+                                            {turnosFuturos[0].hora}
                                         </span>
                                     </div>
                                     <h3 className="text-xl sm:text-2xl font-black text-white leading-tight uppercase tracking-tight break-words">
                                         {turnosFuturos[0].especialidad?.nombre}
                                     </h3>
                                     <p>{turnosFuturos[0].especialidad?.id}</p>
+                                    <p>id_turno: {turnosFuturos[0].id}</p>
                                     <div className="flex items-center gap-2 mt-2 opacity-80 flex-wrap">
                                         <span className="material-symbols-outlined text-sm shrink-0">medical_information</span>
-                                        <p className="text-sm font-semibold truncate">Dr/a. {turnosFuturos[0].medico_nombre}</p>
+                                        <p className="text-sm font-semibold truncate">Dr/a. {turnosFuturos[0].profesional?.nombre_completo}</p>
                                     </div>
                                 </div>
                             </div>
@@ -76,7 +77,7 @@ export default function SeccionInicio({ userName, turnosFuturos, setTab, handleC
                                     </p>
                                 </div>
                             </div>
-                            
+
                             {/* Footer con acciones */}
                             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 relative z-10 border-t border-white/10 pt-6 mt-auto">
                                 <div className="flex w-full sm:w-auto gap-3">
@@ -88,8 +89,8 @@ export default function SeccionInicio({ userName, turnosFuturos, setTab, handleC
                                     </button>
                                 </div>
 
-                                <button 
-                                    onClick={() => handleCancelarTurno(turnosFuturos[0].id)} 
+                                <button
+                                    onClick={() => handleCancelarTurno(turnosFuturos[0].id)}
                                     className="w-full sm:w-auto ml-0 sm:ml-auto text-[10px] font-black uppercase tracking-widest text-white/50 hover:text-red-400 transition-colors flex items-center justify-center gap-1.5"
                                 >
                                     <span className="material-symbols-outlined text-[16px]">close</span> Cancelar turno
@@ -107,7 +108,7 @@ export default function SeccionInicio({ userName, turnosFuturos, setTab, handleC
 
                 {/* --- COLUMNA DERECHA --- */}
                 <div className="w-full lg:w-5/12 flex flex-col gap-6 lg:gap-8">
-                    
+
                     {/* Tarjeta de Últimos Resultados */}
                     <div className="flex flex-col rounded-[2rem] bg-white p-6 sm:p-8 shadow-sm border border-gray-100">
                         <div className="mb-6 flex items-center justify-between">
@@ -147,7 +148,7 @@ export default function SeccionInicio({ userName, turnosFuturos, setTab, handleC
                         <div className="mb-6 flex items-center justify-between">
                             <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Accesos Rápidos</h2>
                         </div>
-                        
+
                         <div className="grid grid-cols-2 gap-3 sm:gap-4">
                             <button onClick={() => setTab('turnos')} className="group flex flex-col items-center justify-center gap-3 rounded-2xl border border-gray-100 bg-[#F4F7F9] p-4 transition-[background-color,border-color,transform] hover:-translate-y-1 hover:border-secondary/30 hover:bg-white hover:shadow-sm">
                                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-primary shadow-sm transition-colors group-hover:bg-primary group-hover:text-white">
@@ -155,7 +156,7 @@ export default function SeccionInicio({ userName, turnosFuturos, setTab, handleC
                                 </div>
                                 <span className="text-[10px] font-black uppercase tracking-widest text-primary">Mis Turnos</span>
                             </button>
-                            
+
                             <button onClick={() => setTab('cartilla')} className="group flex flex-col items-center justify-center gap-3 rounded-2xl border border-gray-100 bg-[#F4F7F9] p-4 transition-[background-color,border-color,transform] hover:-translate-y-1 hover:border-emerald-200 hover:bg-white hover:shadow-sm">
                                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-emerald-600 shadow-sm transition-colors group-hover:bg-emerald-500 group-hover:text-white">
                                     <span className="material-symbols-outlined text-[20px]">groups</span>

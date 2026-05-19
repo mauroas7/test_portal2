@@ -37,7 +37,7 @@ class TurnoService
             return $item['type'] === 'Admision\\Estadoturno'
                 && $item['id'] == $estadoTurnoId;
         });
-        
+
         $turno['estado_completo'] = $estadoTurno;
 
         /* Agenda */
@@ -186,6 +186,19 @@ class TurnoService
                     && $item['id'] == $profesionalId;
             });
 
+            $personaId = data_get(
+                $profesional,
+                'relationships.persona.data.id'
+            );
+
+            $persona = $included->first(function ($item) use ($personaId) {
+
+                return $item['type'] === 'Admin\\Persona'
+                    && $item['id'] == $personaId;
+            });
+
+            $profesional['persona_completa'] = $persona;
+            
             $turno['estado_completo'] = $estadoTurno;
             $turno['agenda_completa'] = $agenda;
             $turno['especialidad_completa'] = $especialidad;

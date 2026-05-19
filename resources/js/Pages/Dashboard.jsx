@@ -10,17 +10,27 @@ import SeccionBiblioteca from '@/Components/Dashboard/SeccionBiblioteca.jsx';
 export default function Dashboard({ auth }) {   // Se quitó esto --> turnos = [], especialidades_db = [], medicos_db = []
 
     const [turnos, setTurnos] = useState([]);
+    const [turnosPendientes, setTurnosPendientes] = useState([]);
 
     useEffect(() => {
-        axios.get('/api/personas/30631/turnos?estado=1')
-
+        axios.get('/api/personas/30631/turnos')
             .then(response => {
                 setTurnos(response.data.data);
             })
             .catch(error => {
                 console.error(error);
             });
+
+        axios.get('/api/personas/254204/turnos?estado=1')
+            .then(response => {
+                setTurnosPendientes(response.data.data);
+            })
+            .catch(error => {
+                console.error(error);
+            });
     }, []);
+
+
 
     const [tab, setTab] = useState('inicio');
 
@@ -52,14 +62,23 @@ export default function Dashboard({ auth }) {   // Se quitó esto --> turnos = [
     // }, [debouncedSearch, especialidades_db, medicos_db]);
 
     const turnosFuturos = useMemo(() => {
-        const hoy = new Date();
-        return turnos.filter(t => new Date(`${t.fecha} ${t.hora}`) >= hoy);
-    }, [turnos]);
+        const ahora = new Date();
 
-    const turnosPasados = useMemo(() => {
-        const hoy = new Date();
-        return turnos.filter(t => new Date(`${t.fecha} ${t.hora}`) < hoy);
-    }, [turnos]);
+        return turnosPendientes.filter(t => {
+
+            const fechaTurno = new Date(
+                `${t.fecha}T${t.hora}`
+            );
+
+            return fechaTurno >= ahora;
+        });
+    }, [turnosPendientes]);
+
+    const turnosPasados = [...turnos].sort((a, b) => {
+        const fechaA = new Date(`${a.fecha}T${a.hora}`);
+        const fechaB = new Date(`${b.fecha}T${b.hora}`);
+        return fechaB - fechaA;
+    });
 
     const menuItems = [
         { id: 'inicio', label: 'Inicio', icon: 'home' },
@@ -82,8 +101,8 @@ export default function Dashboard({ auth }) {   // Se quitó esto --> turnos = [
     const navButtonClass = (item) => {
         const active = tab === item.id;
         return `flex w-full items-center gap-4 rounded-xl border-l-4 px-4 py-3.5 text-left transition-colors ${active
-                ? 'border-secondary bg-[#F4F7F9] text-primary shadow-sm'
-                : 'border-transparent text-brandText hover:bg-[#F4F7F9]/50 hover:shadow-sm'
+            ? 'border-secondary bg-[#F4F7F9] text-primary shadow-sm'
+            : 'border-transparent text-brandText hover:bg-[#F4F7F9]/50 hover:shadow-sm'
             } font-semibold`;
     };
 
@@ -447,8 +466,8 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                                             key={esp.id}
                                             onClick={() => setTurnoData({ ...turnoData, especialidad_id: esp.id, especialidad: esp.nombre, medico_id: null, medico: null })}
                                             className={`group flex flex-col items-start justify-center rounded-xl border-2 p-5 text-left transition-[border-color,background-color,transform] hover:-translate-y-1 ${turnoData.especialidad_id === esp.id
-                                                    ? 'border-secondary bg-blue-50/50 shadow-md'
-                                                    : 'border-transparent border-gray-100 bg-[#F4F7F9] hover:bg-white hover:border-secondary/30 hover:shadow-sm'
+                                                ? 'border-secondary bg-blue-50/50 shadow-md'
+                                                : 'border-transparent border-gray-100 bg-[#F4F7F9] hover:bg-white hover:border-secondary/30 hover:shadow-sm'
                                                 }`}
                                         >
                                             <div className="flex w-full items-center justify-between mb-2">
@@ -493,10 +512,10 @@ function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, e
                                             disabled={prof.turnos_disponibles === 0}
                                             onClick={() => setTurnoData({ ...turnoData, medico_id: prof.id, medico: `${prof.apellido}, ${prof.nombre}` })}
                                             className={`flex items-center gap-5 rounded-xl border-2 p-5 text-left transition-[border-color,background-color] ${prof.turnos_disponibles === 0
-                                                    ? 'border-gray-100 bg-[#F4F7F9] opacity-60 cursor-not-allowed'
-                                                    : turnoData.medico_id === prof.id
-                                                        ? 'border-secondary bg-blue-50/50 shadow-md'
-                                                        : 'border-transparent border-gray-100 bg-[#F4F7F9] hover:bg-white hover:border-secondary/30 hover:shadow-sm'
+                                                ? 'border-gray-100 bg-[#F4F7F9] opacity-60 cursor-not-allowed'
+                                                : turnoData.medico_id === prof.id
+                                                    ? 'border-secondary bg-blue-50/50 shadow-md'
+                                                    : 'border-transparent border-gray-100 bg-[#F4F7F9] hover:bg-white hover:border-secondary/30 hover:shadow-sm'
                                                 }`}
                                         >
                                             <div className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${turnoData.medico_id === prof.id ? 'border-secondary bg-secondary text-white' : 'border-primary bg-white shadow-sm text-primary'}`}>

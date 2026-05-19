@@ -20,21 +20,6 @@ export default function SeccionTurnos({ turnosFuturos, turnosPasados, handleCanc
                 </button>
             </div>
 
-            <div>
-
-                <h1>Mis turnos</h1>
-
-                {turnos.map(turno => (
-                    <div key={turno.id}>
-
-                        <p>{turno.fecha}</p>
-                        <p>
-                            {turno.profesional?.persona?.nombre_completo}
-                        </p>
-                    </div>
-                ))}
-            </div>
-
             {subTabTurnos === 'proximos' && (
                 <div className="overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-sm animate-fade-in">
                     <div className="hidden grid-cols-5 border-b border-gray-100 bg-[#F8F9FA] px-10 py-5 lg:grid">
@@ -50,23 +35,23 @@ export default function SeccionTurnos({ turnosFuturos, turnosPasados, handleCanc
                             {turnosFuturos.map((turno) => (
                                 <div key={turno.id} className="grid gap-4 border-b border-gray-50 px-6 py-6 transition-colors hover:bg-[#F4F7F9] lg:grid-cols-5 lg:items-center lg:px-10">
                                     <div className="min-w-0">
-                                        <p className="text-sm font-black uppercase text-primary truncate">{turno.especialidad}</p>
+                                        <p className="text-sm font-black uppercase text-primary truncate">{turno.especialidad.nombre}</p>
                                         <span className="lg:hidden block mt-1 rounded-full bg-blue-50 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-primary w-fit border border-blue-100">Confirmado</span>
                                     </div>
                                     <div className="min-w-0">
-                                        <p className="text-xs font-semibold text-gray-500 truncate">Dr/a. {turno.medico_nombre}</p>
+                                        <p className="text-xs font-semibold text-gray-500 truncate">Dr/a. {turno.profesional?.nombre_completo}</p>
                                     </div>
                                     <div>
                                         <p className="text-sm font-bold text-brandText">
-                                            {new Date(turno.fecha_hora).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })}
+                                            {new Date(turno.fecha + 'T00:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })}
+
                                         </p>
                                         <p className="mt-1 text-[11px] font-black uppercase tracking-widest text-secondary">
-                                            {new Date(turno.fecha_hora).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })} hs
+                                            {turno.hora} hs
                                         </p>
                                     </div>
                                     <div className="hidden lg:block">
-                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-tight">Sede Central</p>
-                                        <p className="text-[10px] font-medium text-gray-400">Consultorio 04</p>
+                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-tight">Hospital Universitario</p>
                                     </div>
                                     <div className="flex justify-start lg:justify-end">
                                         <button
@@ -93,7 +78,7 @@ export default function SeccionTurnos({ turnosFuturos, turnosPasados, handleCanc
                 <div className="overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-sm animate-fade-in">
                     <div className="hidden grid-cols-4 border-b border-gray-100 bg-[#F8F9FA] px-10 py-5 lg:grid">
                         <span className="text-[10px] font-black uppercase tracking-widest text-brandText col-span-2">Especialidad y Médico</span>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-brandText">Atención</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-brandText">Fecha</span>
                         <span className="text-right pr-4 text-[10px] font-black uppercase tracking-widest text-brandText">Acciones</span>
                     </div>
                     {turnosPasados.length > 0 ? (
@@ -102,14 +87,14 @@ export default function SeccionTurnos({ turnosFuturos, turnosPasados, handleCanc
                                 <div key={turno.id} className="grid gap-4 border-b border-gray-50 px-6 py-6 transition-colors hover:bg-[#F4F7F9] lg:grid-cols-4 lg:items-center lg:px-10 opacity-70 hover:opacity-100">
                                     <div className="lg:col-span-2">
                                         <div className="flex items-center gap-3 mb-1">
-                                            <p className="text-sm font-black uppercase text-primary">{turno.especialidad}</p>
-                                            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-gray-500 border border-gray-200">Asistió</span>
+                                            <p className="text-sm font-black uppercase text-primary">{turno.especialidad.nombre}</p>
+                                            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-gray-500 border border-gray-200">{turno.estado.nombre}</span>
                                         </div>
-                                        <p className="text-xs font-semibold text-gray-500">Dr/a. {turno.medico_nombre}</p>
+                                        <p className="text-xs font-semibold text-gray-500">Dr/a. {turno.profesional.nombre_completo}</p>
                                     </div>
                                     <div>
                                         <p className="text-sm font-bold text-gray-500">
-                                            {new Date(turno.fecha_hora).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                            {new Date(turno.fecha + 'T00:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })}
                                         </p>
                                     </div>
                                     <div className="flex flex-wrap lg:justify-end gap-2 mt-2 lg:mt-0">
