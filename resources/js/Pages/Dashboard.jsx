@@ -44,7 +44,7 @@ export default function Dashboard({ auth }) {   // Se quitó esto --> turnos = [
 
     // Unir Nombre y Apellido (Si existen, sino usa 'Paciente')
     const nombreCompleto = `${auth?.user?.name || ''} ${auth?.user?.last_name || ''}`.trim() || 'Paciente';
-    const userName = `${auth?.user?.name || ''} ${auth?.user?.last_name || ''}`.trim() || 'Paciente';
+    const nombrePaciente = auth?.user?.name || 'Paciente';
     // Inicial para el avatar (Ej: 'J' de Juan)
     const inicial = auth?.user?.name ? auth.user.name.substring(0, 1).toUpperCase() : 'P';
     
@@ -139,7 +139,22 @@ export default function Dashboard({ auth }) {   // Se quitó esto --> turnos = [
 
     const renderProfileMenu = (align = 'right-0', margin = 'top-14') => (
         profileOpen && (
-            <div className={`absolute ${margin} ${align} z-50 w-64 rounded-2xl border border-gray-100 bg-white py-2 shadow-2xl animate-fade-in`}>
+            <div className={`absolute ${margin} ${align} z-50 w-72 rounded-3xl border border-gray-100 bg-white py-2 shadow-2xl animate-fade-in overflow-hidden`}>
+
+                {/* --- NUEVA CABECERA DEL MENÚ --- */}
+                <div className="bg-[#F4F7F9] p-5 border-b border-gray-100 mb-2">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary font-black text-white shadow-sm">
+                            {inicial}
+                        </div>
+                        <div className="overflow-hidden">
+                            <p className="text-[13px] font-black uppercase leading-none text-primary truncate" title={nombreCompleto}>
+                                {nombreCompleto}
+                            </p>
+                            <p className="mt-1 text-[9px] font-black uppercase tracking-widest text-secondary">Portal de Pacientes</p>
+                        </div>
+                    </div>
+                </div>
 
                 {/* BLOQUE 1: Gestión del Paciente */}
                 <div className="flex flex-col">
@@ -258,7 +273,7 @@ export default function Dashboard({ auth }) {   // Se quitó esto --> turnos = [
                                 <img src="/img/Logo HU Uso Diario.svg" alt="Logo" className="h-auto w-32" />
                                 <div className="relative">
                                     <button type="button" onClick={() => setProfileOpen((value) => !value)} className="flex h-11 w-11 items-center justify-center rounded-xl aspect-square bg-primary font-black text-white shadow-md">
-                                        {userName.substring(0, 1)}
+                                        {inicial}
                                     </button>
                                     {renderProfileMenu()}
                                 </div>
@@ -292,7 +307,7 @@ export default function Dashboard({ auth }) {   // Se quitó esto --> turnos = [
                                         </button>
                                     )}
 
-                                    {debouncedSearch.length > 1 && (
+                                    {/* {debouncedSearch.length > 1 && (
                                         <div className="absolute top-full left-0 w-full mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden max-h-[400px] overflow-y-auto">
                                             {searchResults.especialidades.map(esp => (
                                                 <button key={`esp-${esp.id}`} onClick={() => {
@@ -326,7 +341,7 @@ export default function Dashboard({ auth }) {   // Se quitó esto --> turnos = [
                                                 </div>
                                             )}
                                         </div>
-                                    )}
+                                    )} */}
                                 </div>
 
                                 <div className="hidden lg:flex items-center gap-5">
@@ -336,12 +351,12 @@ export default function Dashboard({ auth }) {   // Se quitó esto --> turnos = [
                                     </button>
                                     <div className="h-8 w-px bg-gray-100"></div>
                                     <div className="text-right">
-                                        <p className="text-[13px] font-black uppercase leading-none text-primary">{userName}</p>
+                                        <p className="text-[13px] font-black uppercase leading-none text-primary">{nombreCompleto}</p>
                                         <p className="mt-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-secondary">Paciente</p>
                                     </div>
                                     <div className="relative">
                                         <button type="button" onClick={() => setProfileOpen((value) => !value)} className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl aspect-square bg-primary font-black text-white shadow-md transition-transform hover:scale-105">
-                                            {userName.substring(0, 1)}
+                                            {inicial}
                                         </button>
                                         {renderProfileMenu('right-0', 'top-[60px]')}
                                     </div>
@@ -351,10 +366,10 @@ export default function Dashboard({ auth }) {   // Se quitó esto --> turnos = [
 
                         <div className="flex flex-1 relative">
                             <main className="flex-1 p-5 lg:p-12 w-full">
-                                {tab === 'inicio' && <SeccionInicio userName={userName} turnosFuturos={turnosFuturos} handleCancelarTurno={handleCancelarTurno} setTab={setTab} />}
+                                {tab === 'inicio' && <SeccionInicio nombreCompleto={nombreCompleto} nombrePaciente={nombrePaciente} turnosFuturos={turnosFuturos} handleCancelarTurno={handleCancelarTurno} setTab={setTab} />}
                                 {tab === 'turnos' && <SeccionTurnos turnosFuturos={turnosFuturos} turnosPasados={turnosPasados} handleCancelarTurno={handleCancelarTurno} />}
                                 {tab === 'salud' && <SeccionSalud />}
-                                {/* {tab === 'cartilla' && <SeccionCartilla especialidadesDb={especialidades_db} medicosDb={medicos_db} setIsModalOpen={setIsModalOpen} setNuevoTurno={setNuevoTurno} nuevoTurno={nuevoTurno} setModalStep={setModalStep} />} */}
+                                {tab === 'cartilla' && <SeccionCartilla especialidadesDb={[]} medicosDb={[]} setIsModalOpen={setIsModalOpen} setNuevoTurno={setNuevoTurno} nuevoTurno={nuevoTurno} setModalStep={setModalStep} />}
                                 {tab === 'biblioteca' && <SeccionBiblioteca />}
                             </main>
 
@@ -415,7 +430,7 @@ function NewsCards() {
     );
 }
 
-function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, especialidadesDb, medicosDb, user, setToast }) {
+function TurnoModal({ isOpen, onClose, step, setStep, turnoData, setTurnoData, especialidadesDb = [], medicosDb = [], user, setToast }) {
     const [searchEspecialidad, setSearchEspecialidad] = useState('');
 
     if (!isOpen) return null;

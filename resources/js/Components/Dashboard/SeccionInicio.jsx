@@ -1,10 +1,10 @@
-export default function SeccionInicio({ userName, turnosFuturos, setTab, handleCancelarTurno }) {
+export default function SeccionInicio({ nombreCompleto, nombrePaciente, turnosFuturos, setTab, handleCancelarTurno }) {
     return (
         <div className="w-full animate-fade-in">
             {/* Cabecera del Dashboard */}
             <div className="mb-8 border-b border-gray-100 pb-6">
                 <h1 className="mb-2 text-3xl font-black uppercase tracking-tight text-primary lg:text-4xl">Panel de Control</h1>
-                <p className="font-semibold text-brandText">Hola {userName}, este es el resumen de tu salud hoy.</p>
+                <p className="font-semibold text-brandText">Hola {nombrePaciente}, este es el resumen de tu salud hoy.</p>
             </div>
 
             {/* Contenedor Principal */}
